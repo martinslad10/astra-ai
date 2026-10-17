@@ -1,11 +1,19 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { rateLimit } from "../../../lib/rate-limit";
 
 export const runtime = "nodejs";
 
 const SYSTEM = `You are Astra AI's practical marketing strategist. Reply in Czech unless the user writes in another language. Make realistic, audience-specific marketing content. Never invent performance metrics, testimonials, customer results, or factual product claims. Clearly label assumptions. Provide actionable drafts that the user can edit; do not claim to publish or send anything.`;
 
 export async function POST(request: Request) {
+  const limit = rateLimit(request, "marketing", 4);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Příliš mnoho požadavků. Zkus to znovu za chvíli." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
+    );
+  }
   try {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return NextResponse.json({ error: "Chybí OPENAI_API_KEY na serveru." }, { status: 503 });

@@ -9,7 +9,7 @@ export function GET() {
       imageGenerationConfigured: Boolean(process.env.OPENAI_API_KEY),
       localMemoryNotes: true,
       persistentCloudMemory: false,
-      textFileAttachments: true,
+      textFileAttachments: true,\n      marketingDrafts: Boolean(process.env.OPENAI_API_KEY),
       videoGeneration: false,
     },
   });

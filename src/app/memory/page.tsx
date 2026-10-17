@@ -20,8 +20,10 @@ export default function MemoryPage() {
       if (saved) {
         const parsed: unknown = JSON.parse(saved);
         if (Array.isArray(parsed)) setNotes(parsed.filter((n): n is MemoryNote =>
-          n && typeof n.id === "string" && typeof n.title === "string" &&
-          typeof n.content === "string" && typeof n.updatedAt === "string"
+          n !== null && typeof n === "object" && "id" in n && "title" in n &&
+          "content" in n && "updatedAt" in n &&
+          typeof (n as MemoryNote).id === "string" && typeof (n as MemoryNote).title === "string" &&
+          typeof (n as MemoryNote).content === "string" && typeof (n as MemoryNote).updatedAt === "string"
         ));
       }
     } catch { /* Ignore invalid local data. */ }

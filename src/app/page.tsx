@@ -40,7 +40,7 @@ export default function Home() {
     }
   }, [messages, hydrated]);
 
-    useEffect(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, busy]);
+  useEffect(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, busy]);
 
   async function send(text = draft) {
     const content = text.trim();
@@ -60,7 +60,7 @@ export default function Home() {
 
   async function handleFile(file?: File) {
     if (!file) return;
-    const allowed = /\\.(txt|md|csv|json|html|xml|log)$/i.test(file.name);
+    const allowed = /\.(txt|md|csv|json|html|xml|log)$/i.test(file.name);
     if (!allowed) {
       setError("Zatím lze připojit textové soubory TXT, MD, CSV, JSON, HTML, XML nebo LOG. PDF a Word budou doplněny později.");
       return;
@@ -71,7 +71,7 @@ export default function Home() {
     }
     try {
       const text = await file.text();
-      setDraft(current => current + (current.trim() ? "\\n\\n" : "") + "[Obsah souboru: " + file.name + "]\\n" + text);
+      setDraft(current => current + (current.trim() ? "\n\n" : "") + "[Obsah souboru: " + file.name + "]\n" + text);
       setError("");
       textareaRef.current?.focus();
     } catch {

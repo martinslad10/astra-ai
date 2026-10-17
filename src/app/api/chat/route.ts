@@ -74,7 +74,11 @@ export async function POST(request: Request) {
       model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
       input: messages.map((m) => ({ role: m.role, content: m.content })),
-      max_output_tokens: 2000,
+      tools: [
+        { type: "web_search_preview" },
+        { type: "code_interpreter", container: { type: "auto" } },
+      ],
+      max_output_tokens: 2500,
     });
 
     return NextResponse.json({ reply: response.output_text || "Omlouvám se, nepodařilo se získat textovou odpověď." });

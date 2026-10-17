@@ -9,6 +9,8 @@ A standalone AI workspace for reasoning, coding, and creative workflows. This re
 - User-managed local memory notes with add/delete controls
 - Text-file attachment for TXT, MD, CSV, JSON, HTML, XML and LOG files (15 kB limit)
 - Server-side image generation endpoint using the OpenAI Images API
+- AI marketing workspace that drafts social posts, short-video concepts, a 7-day content plan and A/B tests
+- Optional user-managed local memory passed as context to chat
 - API credentials are read from server environment variables and are not exposed to the browser
 - Roadmap and architecture notes
 

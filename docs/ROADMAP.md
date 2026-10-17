@@ -6,14 +6,16 @@
 - [x] Browser-local recent conversation history
 - [x] Server-side image generation endpoint
 - [x] Environment-based API key handling
-- [ ] Install dependencies and verify production build
+- [x] Install dependencies and verify production build (GitHub Actions)
+- [x] User-managed local memory notes (browser only)
+- [x] Text-file attachment for common text formats
 - [ ] Deploy and configure environment variables
 
 ## Next: reliable workspace
 - [ ] Automated tests and continuous integration
 - [ ] Account authentication
 - [ ] Persistent server-side conversations
-- [ ] User-controlled long-term memory with inspect/edit/delete controls
+- [ ] Cloud-based user-controlled long-term memory with inspect/edit/delete controls
 - [ ] File uploads and document analysis
 - [ ] Streaming responses, cancellation, and retry handling
 - [ ] Model/provider selection and usage limits

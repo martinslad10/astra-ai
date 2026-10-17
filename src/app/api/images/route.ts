@@ -9,7 +9,16 @@ export async function POST(request: Request) {
     if (!apiKey) {
       return NextResponse.json({ error: "Chybí OPENAI_API_KEY na serveru." }, { status: 503 });
     }
-    const body: unknown = await request.json();
+    const rawBody = await request.text();
+    if (Buffer.byteLength(rawBody, "utf8") > 12_000) {
+      return NextResponse.json({ error: "Požadavek je příliš velký." }, { status: 413 });
+    }
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ error: "Tělo požadavku není platný JSON." }, { status: 400 });
+    }
     if (!body || typeof body !== "object" || !("prompt" in body) || typeof body.prompt !== "string") {
       return NextResponse.json({ error: "Zadej textový popis obrázku." }, { status: 400 });
     }

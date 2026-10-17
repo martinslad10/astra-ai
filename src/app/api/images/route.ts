@@ -1,9 +1,17 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { rateLimit } from "../../../lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const limit = rateLimit(request, "images", 3);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Příliš mnoho požadavků. Zkus to znovu za chvíli." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
+    );
+  }
   try {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {

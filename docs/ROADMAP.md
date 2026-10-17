@@ -25,7 +25,7 @@
 
 ## Specialist capabilities
 - [ ] Coding agent that can safely edit project files, show diffs, and run approved tests in an isolated environment
-- [ ] Video generation provider integration
+- [x] Optional Replicate video-generation endpoint and polling UI (requires provider credentials/model configuration)
 - [ ] Marketing integrations for publishing and campaign analytics
 - [ ] User confirmation before sending, publishing, or other consequential external actions
 

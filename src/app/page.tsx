@@ -54,7 +54,9 @@ export default function Home() {
         const parsed: unknown = savedMemory ? JSON.parse(savedMemory) : [];
         if (Array.isArray(parsed)) {
           memory = parsed.filter((item): item is { title: string; content: string } =>
-            item && typeof item.title === "string" && typeof item.content === "string"
+            item !== null && typeof item === "object" && "title" in item && "content" in item &&
+            typeof (item as { title: unknown }).title === "string" &&
+            typeof (item as { content: unknown }).content === "string"
           ).slice(0, 10).map(item => ({ title: item.title.slice(0, 120), content: item.content.slice(0, 1200) }));
         }
       } catch { /* Memory is optional; continue without it. */ }

@@ -48,7 +48,17 @@ export default function Home() {
     const next: Message[] = [...messages, { role: "user", content }];
     setMessages(next); setDraft(""); setError(""); setBusy(true);
     try {
-      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next }) });
+      let memory: { title: string; content: string }[] = [];
+      try {
+        const savedMemory = window.localStorage.getItem("astra-ai-memory-v1");
+        const parsed: unknown = savedMemory ? JSON.parse(savedMemory) : [];
+        if (Array.isArray(parsed)) {
+          memory = parsed.filter((item): item is { title: string; content: string } =>
+            item && typeof item.title === "string" && typeof item.content === "string"
+          ).slice(0, 10).map(item => ({ title: item.title.slice(0, 120), content: item.content.slice(0, 1200) }));
+        }
+      } catch { /* Memory is optional; continue without it. */ }
+      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, memory }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Požadavek se nezdařil.");
       setMessages([...next, { role: "assistant", content: data.reply }]);

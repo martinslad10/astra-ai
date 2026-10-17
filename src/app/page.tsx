@@ -13,13 +13,14 @@ const starters = [
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  useEffect(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, busy]);
+  useEffect(() => {\n    try { const saved = window.localStorage.getItem("astra-ai-chat-v1"); if (saved) setMessages(JSON.parse(saved) as Message[]); } catch { /* Ignore invalid local history. */ }\n    setHydrated(true);\n  }, []);\n  useEffect(() => { if (hydrated) { try { window.localStorage.setItem("astra-ai-chat-v1", JSON.stringify(messages.slice(-100))); } catch { /* Storage may be disabled or full. */ } } }, [messages, hydrated]);\n  useEffect(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, busy]);
 
   async function send(text = draft) {
     const content = text.trim();
@@ -41,10 +42,10 @@ export default function Home() {
     {sidebarOpen && <button aria-label="Zavřít menu" className="mobile-scrim" onClick={() => setSidebarOpen(false)} />}
     <aside className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
       <div className="brand-row"><div className="brand-mark"><Sparkles size={20}/></div><span className="brand-name">astra<span>ai</span></span><button className="icon-button mobile-close" aria-label="Zavřít menu" onClick={() => setSidebarOpen(false)}><X size={18}/></button></div>
-      <button className="new-chat" onClick={() => {setMessages([]);setError("");setSidebarOpen(false)}}><Plus size={17}/> Nová konverzace <span>⌘ K</span></button>
+      <button className="new-chat" onClick={() => {setMessages([]);setError("");setSidebarOpen(false);try{window.localStorage.removeItem("astra-ai-chat-v1")}catch{/* Ignore unavailable storage. */}}}><Plus size={17}/> Nová konverzace <span>⌘ K</span></button>
       <div className="side-label">PRACOVNÍ PROSTOR</div>
       <button className="side-link active"><Sparkles size={17}/> Chat <span className="active-dot"/></button>
-      <button className="side-link" onClick={() => setError("Paměť bude doplněna v další fázi vývoje.")}><BrainCircuit size={17}/> Moje paměť <span className="soon">BRZY</span></button>
+      <button className="side-link" onClick={() => setError("Historie konverzace se ukládá lokálně v tomto prohlížeči. Správa dlouhodobé paměti bude přidána po zavedení účtů a databáze.")}><BrainCircuit size={17}/> Moje paměť <span className="soon">BRZY</span></button>
       <button className="side-link" onClick={() => setError("Programovací agent bude doplněn v další fázi vývoje.")}><Code2 size={17}/> Programování <span className="soon">BRZY</span></button>
       <button className="side-link" onClick={() => setError("Generování obrázků bude vyžadovat připojení obrazového modelu.")}><ImageIcon size={17}/> Obrázky <span className="soon">BRZY</span></button>
       <button className="side-link" onClick={() => setError("Generování videí bude vyžadovat připojení video služby.")}><Film size={17}/> Video <span className="soon">BRZY</span></button>

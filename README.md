@@ -32,7 +32,7 @@ Cloud-synced account-based memory, PDF/Word extraction, a coding agent that can 
 5. Run: `npm run dev`
 6. Open http://localhost:3000
 
-Chat web search and Code Interpreter require API/model/tool access and may incur charges. The image endpoint uses `gpt-image-1`; model access and billing depend on your OpenAI account. Never commit `.env.local` or share API keys.
+Chat web search and Code Interpreter require API/model/tool access and may incur charges. The image endpoint uses `gpt-image-1`; model access and billing depend on your OpenAI account. Optional video generation requires `REPLICATE_API_TOKEN` and `REPLICATE_VIDEO_MODEL` (`owner/model`). Never commit `.env.local` or share API keys.
 
 ## Deployment
 Deploy the Next.js project to a compatible host and configure `OPENAI_API_KEY` as a server-side environment variable. The project has not yet been deployed or verified in a production environment.

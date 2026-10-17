@@ -17,13 +17,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const body: unknown = await request.json();
+    const rawBody = await request.text();
+    if (Buffer.byteLength(rawBody, "utf8") > 150_000) {
+      return NextResponse.json({ error: "Požadavek je příliš velký." }, { status: 413 });
+    }
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ error: "Tělo požadavku není platný JSON." }, { status: 400 });
+    }
     if (!body || typeof body !== "object" || !("messages" in body) || !Array.isArray(body.messages)) {
       return NextResponse.json({ error: "Neplatný formát zpráv." }, { status: 400 });
     }
 
-    const messages = (body.messages as ChatMessage[])
-      .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+    const rawMessages = body.messages as unknown[];
+    if (rawMessages.length > 100) {
+      return NextResponse.json({ error: "Konverzace obsahuje příliš mnoho zpráv." }, { status: 400 });
+    }
+    const messages = rawMessages
+      .filter((m): m is ChatMessage => Boolean(m) && typeof m === "object" &&
+        "role" in m && "content" in m &&
+        ((m as ChatMessage).role === "user" || (m as ChatMessage).role === "assistant") &&
+        typeof (m as ChatMessage).content === "string")
       .slice(-30);
 
     if (messages.length === 0 || !messages.some((m) => m.role === "user")) {

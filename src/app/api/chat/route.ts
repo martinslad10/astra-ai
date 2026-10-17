@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     let memory: MemoryNote[] = [];
     if ("memory" in body && Array.isArray(body.memory)) {
       memory = (body.memory as unknown[])
-        .filter((item): item is MemoryNote => Boolean(item) && typeof item === "object" &&
+        .filter((item): item is MemoryNote => item !== null && typeof item === "object" &&
           "title" in item && "content" in item &&
           typeof (item as MemoryNote).title === "string" &&
           typeof (item as MemoryNote).content === "string")
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Konverzace obsahuje příliš mnoho zpráv." }, { status: 400 });
     }
     const messages = rawMessages
-      .filter((m): m is ChatMessage => Boolean(m) && typeof m === "object" &&
+      .filter((m): m is ChatMessage => m !== null && typeof m === "object" &&
         "role" in m && "content" in m &&
         ((m as ChatMessage).role === "user" || (m as ChatMessage).role === "assistant") &&
         typeof (m as ChatMessage).content === "string")

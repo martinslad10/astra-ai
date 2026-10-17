@@ -7,7 +7,9 @@ export function GET() {
     capabilities: {
       chatConfigured: Boolean(process.env.OPENAI_API_KEY),
       imageGenerationConfigured: Boolean(process.env.OPENAI_API_KEY),
+      localMemoryNotes: true,
       persistentCloudMemory: false,
+      textFileAttachments: true,
       videoGeneration: false,
     },
   });

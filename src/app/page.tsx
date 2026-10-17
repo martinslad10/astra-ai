@@ -99,9 +99,9 @@ export default function Home() {
       <div className="side-label">PRACOVNÍ PROSTOR</div>
       <button className="side-link active"><Sparkles size={17}/> Chat <span className="active-dot"/></button>
       <button className="side-link" onClick={() => { window.location.href = "/memory"; }}><BrainCircuit size={17}/> Moje paměť</button>
-      <button className="side-link" onClick={() => setError("Plnohodnotný programovací agent s bezpečným spouštěním kódu ještě není připojen.")}><Code2 size={17}/> Programování <span className="soon">BRZY</span></button>
+      <button className="side-link" onClick={() => { window.location.href = "/code"; }}><Code2 size={17}/> Programování</button>
       <button className="side-link" onClick={() => { window.location.href = "/marketing"; }}><Megaphone size={17}/> Marketing</button>
-      <button className="side-link" onClick={() => { window.location.href = "/images"; }}><ImageIcon size={17}/> Obrázky <span className="soon">BRZY</span></button>
+      <button className="side-link" onClick={() => { window.location.href = "/images"; }}><ImageIcon size={17}/> Obrázky</button>
       <button className="side-link" onClick={() => setError("Generování videí bude vyžadovat připojení video služby.")}><Film size={17}/> Video <span className="soon">BRZY</span></button>
       <div className="sidebar-bottom"><div className="status-card"><span className="status-pulse"/><div><strong>Pracovní verze</strong><small>Vývoj právě začíná</small></div><Activity size={16}/></div><div className="profile-row"><div className="avatar">A</div><div><strong>Astra AI</strong><small>Osobní AI prostor</small></div><ChevronDown size={15}/></div></div>
     </aside>

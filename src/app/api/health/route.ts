@@ -6,6 +6,8 @@ export function GET() {
     app: "Astra AI",
     capabilities: {
       chatConfigured: Boolean(process.env.OPENAI_API_KEY),
+      webSearch: Boolean(process.env.OPENAI_API_KEY),
+      sandboxedCodeInterpreter: Boolean(process.env.OPENAI_API_KEY),
       imageGenerationConfigured: Boolean(process.env.OPENAI_API_KEY),
       localMemoryNotes: true,
       persistentCloudMemory: false,

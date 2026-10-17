@@ -5,6 +5,8 @@ A standalone AI workspace for reasoning, coding, and creative workflows. This re
 ## Implemented in the current foundation
 - Responsive Czech-language chat workspace
 - Server-side text chat through the OpenAI Responses API
+- Chat can use OpenAI web search for current information
+- Chat can use OpenAI Code Interpreter in a hosted sandbox for Python, calculations, and data analysis
 - Browser-local persistence for the recent chat transcript
 - User-managed local memory notes with add/delete controls
 - Text-file attachment for TXT, MD, CSV, JSON, HTML, XML and LOG files (15 kB limit)
@@ -16,11 +18,11 @@ A standalone AI workspace for reasoning, coding, and creative workflows. This re
 - Roadmap and architecture notes
 
 ## Not yet implemented
-Cloud-synced account-based memory, PDF/Word extraction, sandboxed code execution, video rendering provider integration, multi-provider routing, authentication, shared production-grade rate limiting, and production deployment still require additional implementation and testing.
+Cloud-synced account-based memory, PDF/Word extraction, a coding agent that can safely edit and test project files, video rendering provider integration, multi-provider routing, authentication, shared production-grade rate limiting, and production deployment still require additional implementation and testing.
 
 ## Requirements
 - Node.js 20.9+
-- OpenAI API key with access to the selected models
+- OpenAI API key with access to the selected models and tools
 
 ## Run locally
 1. Install dependencies: `npm install`
@@ -30,7 +32,7 @@ Cloud-synced account-based memory, PDF/Word extraction, sandboxed code execution
 5. Run: `npm run dev`
 6. Open http://localhost:3000
 
-The image endpoint uses `gpt-image-1`; model access and billing depend on your OpenAI account. Never commit `.env.local` or share API keys.
+Chat web search and Code Interpreter require API/model/tool access and may incur charges. The image endpoint uses `gpt-image-1`; model access and billing depend on your OpenAI account. Never commit `.env.local` or share API keys.
 
 ## Deployment
 Deploy the Next.js project to a compatible host and configure `OPENAI_API_KEY` as a server-side environment variable. The project has not yet been deployed or verified in a production environment.

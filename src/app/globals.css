@@ -58,3 +58,9 @@
 .marketing-result-head button{display:flex;align-items:center;gap:6px;border:1px solid #37364e;border-radius:7px;background:#191a29;color:#d0ccff;padding:8px 10px;font-size:10px}
 .marketing-result pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.8 inherit;color:#c2c7d5;padding:18px;margin:0}
 @media(max-width:600px){.marketing-select-grid{grid-template-columns:1fr}.marketing-result-head h2{font-size:12px}}
+
+.image-form select{width:100%;border:1px solid #2b3040;border-radius:9px;background:#0b0e15;color:var(--text);padding:12px;font-size:12px;margin-bottom:16px;outline:none}
+.image-form select:focus{border-color:#625a9a}
+.code-result .image-result-footer{border-bottom:1px solid var(--line)}
+.code-result .image-result-footer button{display:flex;align-items:center;gap:7px;background:#191a29;color:#d0ccff;border:1px solid #37364e;border-radius:7px;padding:8px 10px;font-size:10px}
+.code-result pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c2c7d5;padding:18px;margin:0;max-height:70vh;overflow:auto}

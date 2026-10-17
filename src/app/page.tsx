@@ -102,7 +102,7 @@ export default function Home() {
       <button className="side-link" onClick={() => { window.location.href = "/code"; }}><Code2 size={17}/> Programování</button>
       <button className="side-link" onClick={() => { window.location.href = "/marketing"; }}><Megaphone size={17}/> Marketing</button>
       <button className="side-link" onClick={() => { window.location.href = "/images"; }}><ImageIcon size={17}/> Obrázky</button>
-      <button className="side-link" onClick={() => setError("Generování videí bude vyžadovat připojení video služby.")}><Film size={17}/> Video <span className="soon">BRZY</span></button>
+      <button className="side-link" onClick={() => { window.location.href = "/video"; }}><Film size={17}/> Video</button>
       <div className="sidebar-bottom"><div className="status-card"><span className="status-pulse"/><div><strong>Pracovní verze</strong><small>Vývoj právě začíná</small></div><Activity size={16}/></div><div className="profile-row"><div className="avatar">A</div><div><strong>Astra AI</strong><small>Osobní AI prostor</small></div><ChevronDown size={15}/></div></div>
     </aside>
     <section className="main-panel">

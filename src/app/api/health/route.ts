@@ -13,7 +13,7 @@ export function GET() {
       persistentCloudMemory: false,
       textFileAttachments: true,
       marketingDrafts: Boolean(process.env.OPENAI_API_KEY),
-      videoGeneration: false,
+      videoGeneration: Boolean(process.env.REPLICATE_API_TOKEN && process.env.REPLICATE_VIDEO_MODEL),
     },
   });
 }

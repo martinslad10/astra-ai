@@ -20,7 +20,26 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {\n    try { const saved = window.localStorage.getItem("astra-ai-chat-v1"); if (saved) setMessages(JSON.parse(saved) as Message[]); } catch { /* Ignore invalid local history. */ }\n    setHydrated(true);\n  }, []);\n  useEffect(() => { if (hydrated) { try { window.localStorage.setItem("astra-ai-chat-v1", JSON.stringify(messages.slice(-100))); } catch { /* Storage may be disabled or full. */ } } }, [messages, hydrated]);\n  useEffect(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, busy]);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("astra-ai-chat-v1");
+      if (saved) setMessages(JSON.parse(saved) as Message[]);
+    } catch {
+      // Ignore invalid local history.
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.localStorage.setItem("astra-ai-chat-v1", JSON.stringify(messages.slice(-100)));
+    } catch {
+      // Storage may be disabled or full.
+    }
+  }, [messages, hydrated]);
+
+    useEffect(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, busy]);
 
   async function send(text = draft) {
     const content = text.trim();

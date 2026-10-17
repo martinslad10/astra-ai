@@ -28,7 +28,7 @@
 - [ ] User confirmation before sending, publishing, or other consequential external actions
 
 ## Production hardening
-- [ ] Rate limiting and abuse prevention
+- [x] Basic in-process rate limiting and request-size guards\n- [ ] Shared production-grade rate limiting and abuse prevention
 - [ ] Authentication and per-user data isolation
 - [ ] Logging and monitoring without leaking sensitive content
 - [ ] Accessibility and mobile QA

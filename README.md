@@ -12,10 +12,11 @@ A standalone AI workspace for reasoning, coding, and creative workflows. This re
 - AI marketing workspace that drafts social posts, short-video concepts, a 7-day content plan and A/B tests
 - Optional user-managed local memory passed as context to chat
 - API credentials are read from server environment variables and are not exposed to the browser
+- Basic per-process rate limits and request-size validation on AI endpoints
 - Roadmap and architecture notes
 
 ## Not yet implemented
-Cloud-synced account-based memory, PDF/Word extraction, sandboxed code execution, video generation, multi-provider routing, authentication, rate limiting, and production deployment still require additional implementation and testing.
+Cloud-synced account-based memory, PDF/Word extraction, sandboxed code execution, video rendering provider integration, multi-provider routing, authentication, shared production-grade rate limiting, and production deployment still require additional implementation and testing.
 
 ## Requirements
 - Node.js 20.9+

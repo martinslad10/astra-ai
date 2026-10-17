@@ -10,7 +10,7 @@ A standalone AI workspace for reasoning, coding, and creative workflows. This re
 - Browser-local persistence for the recent chat transcript
 - User-managed local memory notes with add/delete controls
 - Text-file attachment for TXT, MD, CSV, JSON, HTML, XML and LOG files (15 kB limit)
-- Server-side image generation endpoint using the OpenAI Images API
+- Server-side image generation endpoint using the OpenAI Images API\n- Optional video generation integration via Replicate with asynchronous status polling
 - AI marketing workspace that drafts social posts, short-video concepts, a 7-day content plan and A/B tests
 - Optional user-managed local memory passed as context to chat
 - API credentials are read from server environment variables and are not exposed to the browser
@@ -18,7 +18,7 @@ A standalone AI workspace for reasoning, coding, and creative workflows. This re
 - Roadmap and architecture notes
 
 ## Not yet implemented
-Cloud-synced account-based memory, PDF/Word extraction, a coding agent that can safely edit and test project files, video rendering provider integration, multi-provider routing, authentication, shared production-grade rate limiting, and production deployment still require additional implementation and testing.
+Cloud-synced account-based memory, PDF/Word extraction, a coding agent that can safely edit and test project files, video provider credentials/model configuration, multi-provider routing, authentication, shared production-grade rate limiting, and production deployment still require additional implementation and testing.
 
 ## Requirements
 - Node.js 20.9+

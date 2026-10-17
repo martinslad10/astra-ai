@@ -47,7 +47,7 @@ export default function Home() {
       <button className="side-link active"><Sparkles size={17}/> Chat <span className="active-dot"/></button>
       <button className="side-link" onClick={() => setError("Historie konverzace se ukládá lokálně v tomto prohlížeči. Správa dlouhodobé paměti bude přidána po zavedení účtů a databáze.")}><BrainCircuit size={17}/> Moje paměť <span className="soon">BRZY</span></button>
       <button className="side-link" onClick={() => setError("Programovací agent bude doplněn v další fázi vývoje.")}><Code2 size={17}/> Programování <span className="soon">BRZY</span></button>
-      <button className="side-link" onClick={() => setError("Generování obrázků bude vyžadovat připojení obrazového modelu.")}><ImageIcon size={17}/> Obrázky <span className="soon">BRZY</span></button>
+      <button className="side-link" onClick={() => { window.location.href = "/images"; }}><ImageIcon size={17}/> Obrázky <span className="soon">BRZY</span></button>
       <button className="side-link" onClick={() => setError("Generování videí bude vyžadovat připojení video služby.")}><Film size={17}/> Video <span className="soon">BRZY</span></button>
       <div className="sidebar-bottom"><div className="status-card"><span className="status-pulse"/><div><strong>Pracovní verze</strong><small>Vývoj právě začíná</small></div><Activity size={16}/></div><div className="profile-row"><div className="avatar">A</div><div><strong>Astra AI</strong><small>Osobní AI prostor</small></div><ChevronDown size={15}/></div></div>
     </aside>

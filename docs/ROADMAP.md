@@ -9,6 +9,7 @@
 - [x] Install dependencies and verify production build (GitHub Actions)
 - [x] User-managed local memory notes (browser only)
 - [x] Text-file attachment for common text formats
+- [x] AI marketing draft workflow (posts, short-video ideas, calendar, A/B tests)
 - [ ] Deploy and configure environment variables
 
 ## Next: reliable workspace

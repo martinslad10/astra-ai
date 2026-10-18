@@ -10,7 +10,7 @@
 - [x] Environment-based API key handling
 - [x] Build and lint verification in GitHub Actions
 - [x] User-managed local memory notes (browser only)
-- [x] Text-file attachment for common text formats
+- [x] Text and document attachment for common text formats plus PDF/DOCX extraction (5 MB limit)
 - [x] AI marketing draft workflow (posts, short-video ideas, calendar, A/B tests)
 - [ ] Deploy and configure environment variables
 
@@ -19,7 +19,7 @@
 - [ ] Account authentication
 - [ ] Persistent server-side conversations
 - [ ] Cloud-based user-controlled long-term memory with inspect/edit/delete controls
-- [ ] PDF/Word extraction and larger document uploads
+- [x] PDF/Word text extraction (5 MB limit; scanned PDFs need OCR, which is not included)
 - [ ] Streaming responses, cancellation, and retry handling
 - [ ] Model/provider selection and usage limits
 

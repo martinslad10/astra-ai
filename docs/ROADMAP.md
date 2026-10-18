@@ -3,7 +3,7 @@
 ## Current foundation
 - [x] Responsive chat workspace
 - [x] Server-side text chat endpoint
-- [x] OpenAI web search tool in chat
+- [x] OpenAI web search tool in chat (current Responses API tool name)
 - [x] OpenAI Code Interpreter sandbox in chat for Python/data tasks
 - [x] Browser-local recent conversation history
 - [x] Server-side image generation endpoint

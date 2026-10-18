@@ -18,7 +18,7 @@ A standalone AI workspace for reasoning, coding, and creative workflows. This re
 - Roadmap and architecture notes
 
 ## Not yet implemented
-Cloud-synced account-based memory, PDF/Word extraction, a coding agent that can safely edit and test project files, configuration and live verification of the video provider/model, multi-provider routing, authentication, shared production-grade rate limiting, and production deployment still require additional implementation and testing.
+Cloud-synced account-based memory, a coding agent that can safely edit and test project files, multi-provider routing, authentication, shared production-grade rate limiting, and production deployment still require additional implementation and testing. PDF/DOCX text extraction is implemented; scanned PDFs still need OCR. Provider configuration and real requests must be tested after keys are added.
 
 ## Requirements
 - Node.js 20.9+

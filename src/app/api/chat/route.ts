@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
       input: messages.map((m) => ({ role: m.role, content: m.content })),
       tools: [
-        { type: "web_search_preview" },
+        { type: "web_search" },
         { type: "code_interpreter", container: { type: "auto" } },
       ],
       max_output_tokens: 2500,

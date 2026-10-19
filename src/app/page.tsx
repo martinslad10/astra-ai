@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { getSupabaseBrowserClient } from "../lib/supabase-browser";
 import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -14,6 +15,8 @@ const starters = [
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [model, setModel] = useState("gpt-4.1-mini");
+  const [cloudConversationId, setCloudConversationId] = useState<string | null>(null);
+  const [cloudSyncNotice, setCloudSyncNotice] = useState("");
   const [hydrated, setHydrated] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -23,13 +26,45 @@ export default function Home() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem("astra-ai-chat-v1");
-      if (saved) setMessages(JSON.parse(saved) as Message[]);
-    } catch {
-      // Ignore invalid local history.
+    let active = true;
+    async function restoreHistory() {
+      try {
+        const saved = window.localStorage.getItem("astra-ai-chat-v1");
+        if (saved && active) setMessages(JSON.parse(saved) as Message[]);
+      } catch {
+        // Ignore invalid local history.
+      }
+      setHydrated(true);
+
+      const client = getSupabaseBrowserClient();
+      if (!client) return;
+      try {
+        const { data: sessionData } = await client.auth.getSession();
+        const user = sessionData.session?.user;
+        if (!user || !active) return;
+        const { data: rows, error: conversationError } = await client
+          .from("conversations").select("id,title,updated_at")
+          .eq("user_id", user.id).order("updated_at", { ascending: false }).limit(1);
+        if (conversationError) throw conversationError;
+        const conversation = rows?.[0];
+        if (!conversation || !active) return;
+        const { data: cloudMessages, error: messageError } = await client
+          .from("messages").select("role,content").eq("conversation_id", conversation.id)
+          .eq("user_id", user.id).order("created_at", { ascending: true }).limit(100);
+        if (messageError) throw messageError;
+        if (active && cloudMessages?.length) {
+          setCloudConversationId(conversation.id);
+          setMessages(cloudMessages.filter((m): m is Message =>
+            (m.role === "user" || m.role === "assistant") && typeof m.content === "string"
+          ));
+          setCloudSyncNotice("Historie obnovena z cloudu.");
+        }
+      } catch {
+        if (active) setCloudSyncNotice("Cloudovou historii se nepodařilo načíst. Lokální historie zůstává dostupná.");
+      }
     }
-    setHydrated(true);
+    void restoreHistory();
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -64,7 +99,35 @@ export default function Home() {
       const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, memory, model }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Požadavek se nezdařil.");
-      setMessages([...next, { role: "assistant", content: data.reply }]);
+      const assistantMessage = { role: "assistant" as const, content: data.reply };
+      setMessages([...next, assistantMessage]);
+      const client = getSupabaseBrowserClient();
+      if (client) {
+        try {
+          const { data: sessionData } = await client.auth.getSession();
+          const user = sessionData.session?.user;
+          if (user) {
+            let conversationId = cloudConversationId;
+            if (!conversationId) {
+              const title = content.slice(0, 80) || "Nová konverzace";
+              const { data: created, error: createError } = await client
+                .from("conversations").insert({ user_id: user.id, title }).select("id").single();
+              if (createError) throw createError;
+              conversationId = created.id;
+              setCloudConversationId(conversationId);
+            }
+            const { error: saveError } = await client.from("messages").insert([
+              { conversation_id: conversationId, user_id: user.id, role: "user", content },
+              { conversation_id: conversationId, user_id: user.id, role: "assistant", content: data.reply },
+            ]);
+            if (saveError) throw saveError;
+            await client.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId).eq("user_id", user.id);
+            setCloudSyncNotice("Konverzace uložena do cloudu.");
+          }
+        } catch {
+          setCloudSyncNotice("Odpověď je hotová, ale cloudové uložení se nezdařilo. Lokální historie zůstává dostupná.");
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Něco se pokazilo. Zkus to znovu.");
     } finally { setBusy(false); textareaRef.current?.focus(); }
@@ -122,6 +185,7 @@ export default function Home() {
     </aside>
     <section className="main-panel">
       <header className="topbar"><button className="icon-button menu-button" aria-label="Otevřít menu" onClick={() => setSidebarOpen(true)}><Menu size={20}/></button><div className="breadcrumb"><span>Pracovní prostor</span><span className="crumb-slash">/</span><strong>Chat</strong></div><div className="topbar-right"><span className="model-indicator"><span/> AI model</span><label className="model-select" aria-label="Vybrat AI model"><select value={model} onChange={e => setModel(e.target.value)}><option value="gpt-4.1-mini">Rychlý</option><option value="gpt-4.1">Pokročilý</option><option value="gpt-4o-mini">Úsporný</option></select><ChevronDown size={14}/></label></div></header>
+      {cloudSyncNotice && <div className="cloud-sync-notice" role="status">{cloudSyncNotice}</div>}
       <div className={`conversation ${messages.length ? "conversation-active" : ""}`}>
         {messages.length === 0 ? <div className="welcome"><div className="eyebrow"><WandSparkles size={14}/> VÁŠ NOVÝ PRACOVNÍ PROSTOR</div><h1>Velké nápady začínají<br/><span>jednou otázkou.</span></h1><p className="welcome-subtitle">Přemýšlej, tvoř a stavěj. Jedno místo pro práci s AI — postupně vybavené nástroji, které potřebuješ.</p><div className="starter-grid">{starters.map(({icon:Icon,title,text}) => <button className="starter-card" key={title} onClick={() => void send(text)}><div className="starter-icon"><Icon size={18}/></div><strong>{title}</strong><span>{text}</span><ArrowUp className="starter-arrow" size={15}/></button>)}</div><div className="trust-line"><span><Check size={13}/> Samostatný projekt</span><span><Check size={13}/> Soukromí na prvním místě</span><span><Check size={13}/> Postupně rozšiřitelné</span></div></div> : <div className="message-list">{messages.map((m,i) => <div className={`message ${m.role}`} key={`${i}-${m.role}`}><div className="message-avatar">{m.role === "assistant" ? <Sparkles size={16}/> : "Ty"}</div><div className="message-content"><div className="message-role">{m.role === "assistant" ? "Astra AI" : "Ty"}</div><p>{m.content}</p></div></div>)}{busy && <div className="message assistant"><div className="message-avatar"><Sparkles size={16}/></div><div className="message-content"><div className="message-role">Astra AI</div><div className="typing"><span/><span/><span/></div></div></div>}<div ref={bottomRef}/></div>}
       </div>

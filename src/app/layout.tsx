@@ -1,9 +1,29 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://astra-ai-martinslad10.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Astra AI — Your AI workspace",
-  description: "A standalone workspace for reasoning, coding, and creative work.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Astra AI — osobní AI pracovní prostor",
+    template: "%s | Astra AI",
+  },
+  description: "Samostatný AI pracovní prostor pro přemýšlení, programování, tvorbu obrázků, marketingové návrhy a analýzu dat.",
+  applicationName: "Astra AI",
+  openGraph: {
+    type: "website",
+    locale: "cs_CZ",
+    siteName: "Astra AI",
+    title: "Astra AI — osobní AI pracovní prostor",
+    description: "Přemýšlej, tvoř a stavěj s Astra AI.",
+    url: "/",
+  },
+  twitter: {
+    card: "summary",
+    title: "Astra AI — osobní AI pracovní prostor",
+    description: "Samostatný AI pracovní prostor pro přemýšlení, programování a kreativní práci.",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

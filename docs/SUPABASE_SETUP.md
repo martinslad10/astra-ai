@@ -1,14 +1,28 @@
-# Supabase setup (optional cloud foundation)
+# Supabase setup for Astra AI accounts and memory sync
 
-Astra AI currently stores chat history and memory notes in the browser. This migration prepares isolated cloud tables for user profiles, conversations, messages and memory notes; it does **not** turn cloud sync on by itself.
+Astra AI keeps chat history locally in the browser. The account page supports passwordless email sign-in through Supabase, and the memory page has an explicit, opt-in cloud-sync action. Cloud sync is not available until the Supabase project, schema and deployment environment are configured.
 
-## Setup later, together
+## Configure Supabase
+
 1. Create a Supabase project.
-2. In SQL Editor, apply `supabase/migrations/202610180001_initial_schema.sql`.
-3. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to the deployment environment.
-4. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only and never expose it in a client component.
-5. Implement and test sign-in, session validation, account deletion/export and per-request ownership checks before enabling cloud data.
-6. Test RLS using two separate test accounts and verify that neither can read, change or delete the other's rows.
+2. In the Supabase SQL Editor, apply `supabase/migrations/202610180001_initial_schema.sql`.
+3. In Supabase Authentication settings, configure the site URL and allowed redirect URLs. Add the production URL and local development URL you use, including the `/account` callback path if required by your project settings.
+4. In the Vercel project settings, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the relevant deployment environments.
+5. Redeploy after changing environment variables.
+6. Open `/account`, request a sign-in link using an email you control, and confirm that the link returns to Astra AI.
+7. Open `/memory` and click **Synchronizovat s cloudem** to merge local notes with notes stored for that signed-in account.
 
-## Security boundary
-The schema enables row-level security and scopes records by `auth.uid()`. It is only a database foundation. Do not store sensitive information in cloud tables until API authentication and account lifecycle flows are implemented and verified. Existing local memory continues to work independently.
+The browser uses the public/anon key only. Row-level security policies in the migration scope memory notes to `auth.uid()`. Never put `SUPABASE_SERVICE_ROLE_KEY` in a `NEXT_PUBLIC_*` variable or browser code.
+
+## Current behavior and limitations
+
+- Memory remains local unless the user explicitly starts cloud sync.
+- Sync merges local and remote notes by ID, uploads the merged set and then reloads the rows allowed by RLS. It is a first version, not a conflict-resolution system for simultaneous edits across multiple devices.
+- Deleting a note attempts to delete the matching cloud row when a signed-in Supabase client is available. If offline or misconfigured, the local note is removed but the cloud delete may fail; the UI shows a notice.
+- Chat history is still local and is not yet synced to the cloud.
+- The memory notes are not automatically injected into AI prompts yet.
+- Account deletion/export and a full account lifecycle flow are not implemented.
+
+## Security verification before production use
+
+The migration enables row-level security and applies ownership checks using `auth.uid()`. Before storing sensitive or important information, test with two separate accounts and verify neither account can read, update or delete the other's rows. Also test expired sessions, email-link redirects, missing environment variables and database errors. Do not expose service-role credentials to the client.

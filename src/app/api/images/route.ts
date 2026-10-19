@@ -34,10 +34,14 @@ export async function POST(request: Request) {
     if (!prompt || prompt.length > 4000) {
       return NextResponse.json({ error: "Popis musí mít 1 až 4 000 znaků." }, { status: 400 });
     }
+    const selfPromotionRequest = /s[aá]m na sebe|o sob[eě]|svou reklamu|reklam.{0,30}(?:msdai|asistent|sebe)|propaguj.{0,30}(?:msdai|asistent)/i.test(prompt);
+    const imagePrompt = selfPromotionRequest
+      ? `${prompt}\n\nMANDATORY BRAND REQUIREMENTS: This is an advertisement for the independent product MSDAI. The only assistant/product brand name shown in the image must be exactly “MSDAI”. Do NOT show the name ChatGPT, the OpenAI logo, or any other AI company/product branding. Create a polished Czech-language promotional ad for MSDAI. If text is included, make “MSDAI” the prominent headline and use a short generic tagline such as “Tvůj AI asistent”. Do not imitate another company’s logo or visual identity.`
+      : prompt;
     const client = new OpenAI({ apiKey });
     const result = await client.images.generate({
       model: "gpt-image-1",
-      prompt,
+      prompt: imagePrompt,
       size: "1024x1024",
     });
     const image = result.data?.[0];

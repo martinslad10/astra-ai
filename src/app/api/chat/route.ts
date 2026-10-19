@@ -95,14 +95,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ reply: response.output_text || "Omlouvám se, nepodařilo se získat textovou odpověď." });
   } catch (error) {
     console.error("Astra AI chat error:", error);
-    const status = typeof error === "object" && error !== null && "status" in error && typeof error.status === "number"
+    const upstreamStatus = typeof error === "object" && error !== null && "status" in error && typeof error.status === "number"
       ? error.status
       : 500;
-    const message = status === 401 || status === 403
+    const message = upstreamStatus === 401 || upstreamStatus === 403
       ? "OpenAI odmítlo API klíč nebo jeho oprávnění. Zkontroluj klíč a oprávnění Responses API ve Vercelu."
-      : status === 429
+      : upstreamStatus === 429
         ? "OpenAI odmítlo požadavek kvůli limitu nebo fakturaci. Zkontroluj limity a fakturaci svého OpenAI API účtu."
-        : "Odpověď se nepodařilo získat. Zkontroluj nastavení modelu a zkus to znovu.";
-    return NextResponse.json({ error: message }, { status: 500 });
+        : upstreamStatus === 400 || upstreamStatus === 404
+          ? "OpenAI odmítlo požadavek. Zkontroluj název modelu a podporované funkce v konfiguraci Astra AI."
+          : "Odpověď se nepodařilo získat. Zkontroluj nastavení modelu a zkus to znovu.";
+    const status = upstreamStatus === 401 || upstreamStatus === 403 || upstreamStatus === 429
+      ? upstreamStatus
+      : upstreamStatus === 400 ? 400 : 502;
+    return NextResponse.json({ error: message }, { status });
   }
 }

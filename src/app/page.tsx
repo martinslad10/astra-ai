@@ -13,6 +13,7 @@ const starters = [
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [model, setModel] = useState("gpt-4.1-mini");
   const [hydrated, setHydrated] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -60,7 +61,7 @@ export default function Home() {
           ).slice(0, 10).map(item => ({ title: item.title.slice(0, 120), content: item.content.slice(0, 1200) }));
         }
       } catch { /* Memory is optional; continue without it. */ }
-      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, memory }) });
+      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, memory, model }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Požadavek se nezdařil.");
       setMessages([...next, { role: "assistant", content: data.reply }]);
@@ -120,7 +121,7 @@ export default function Home() {
       <div className="sidebar-bottom"><div className="status-card"><span className="status-pulse"/><div><strong>Pracovní verze</strong><small>Vývoj právě začíná</small></div><Activity size={16}/></div><div className="profile-row"><div className="avatar">A</div><div><strong>Astra AI</strong><small>Osobní AI prostor</small></div><ChevronDown size={15}/></div></div>
     </aside>
     <section className="main-panel">
-      <header className="topbar"><button className="icon-button menu-button" aria-label="Otevřít menu" onClick={() => setSidebarOpen(true)}><Menu size={20}/></button><div className="breadcrumb"><span>Pracovní prostor</span><span className="crumb-slash">/</span><strong>Chat</strong></div><div className="topbar-right"><span className="model-indicator"><span/> AI model</span><button className="model-select" onClick={() => setError("Výběr modelu bude dostupný po rozšíření konfigurace.")}>Výchozí <ChevronDown size={14}/></button></div></header>
+      <header className="topbar"><button className="icon-button menu-button" aria-label="Otevřít menu" onClick={() => setSidebarOpen(true)}><Menu size={20}/></button><div className="breadcrumb"><span>Pracovní prostor</span><span className="crumb-slash">/</span><strong>Chat</strong></div><div className="topbar-right"><span className="model-indicator"><span/> AI model</span><label className="model-select" aria-label="Vybrat AI model"><select value={model} onChange={e => setModel(e.target.value)}><option value="gpt-4.1-mini">Rychlý</option><option value="gpt-4.1">Pokročilý</option><option value="gpt-4o-mini">Úsporný</option></select><ChevronDown size={14}/></label></div></header>
       <div className={`conversation ${messages.length ? "conversation-active" : ""}`}>
         {messages.length === 0 ? <div className="welcome"><div className="eyebrow"><WandSparkles size={14}/> VÁŠ NOVÝ PRACOVNÍ PROSTOR</div><h1>Velké nápady začínají<br/><span>jednou otázkou.</span></h1><p className="welcome-subtitle">Přemýšlej, tvoř a stavěj. Jedno místo pro práci s AI — postupně vybavené nástroji, které potřebuješ.</p><div className="starter-grid">{starters.map(({icon:Icon,title,text}) => <button className="starter-card" key={title} onClick={() => void send(text)}><div className="starter-icon"><Icon size={18}/></div><strong>{title}</strong><span>{text}</span><ArrowUp className="starter-arrow" size={15}/></button>)}</div><div className="trust-line"><span><Check size={13}/> Samostatný projekt</span><span><Check size={13}/> Soukromí na prvním místě</span><span><Check size={13}/> Postupně rozšiřitelné</span></div></div> : <div className="message-list">{messages.map((m,i) => <div className={`message ${m.role}`} key={`${i}-${m.role}`}><div className="message-avatar">{m.role === "assistant" ? <Sparkles size={16}/> : "Ty"}</div><div className="message-content"><div className="message-role">{m.role === "assistant" ? "Astra AI" : "Ty"}</div><p>{m.content}</p></div></div>)}{busy && <div className="message assistant"><div className="message-avatar"><Sparkles size={16}/></div><div className="message-content"><div className="message-role">Astra AI</div><div className="typing"><span/><span/><span/></div></div></div>}<div ref={bottomRef}/></div>}
       </div>

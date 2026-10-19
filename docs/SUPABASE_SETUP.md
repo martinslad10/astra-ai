@@ -20,7 +20,7 @@ The browser uses the public/anon key only. Row-level security policies in the mi
 - Sync merges local and remote notes by ID, uploads the merged set and then reloads the rows allowed by RLS. It is a first version, not a conflict-resolution system for simultaneous edits across multiple devices.
 - Deleting a note attempts to delete the matching cloud row when a signed-in Supabase client is available. If offline or misconfigured, the local note is removed but the cloud delete may fail; the UI shows a notice.
 - Chat history is still local and is not yet synced to the cloud.
-- The memory notes are not automatically injected into AI prompts yet.
+- Browser-local memory notes are sent as optional context when a chat message is submitted. Notes existing only in Supabase are not automatically loaded into the chat; sync them to this browser first.
 - Account deletion/export and a full account lifecycle flow are not implemented.
 
 ## Security verification before production use

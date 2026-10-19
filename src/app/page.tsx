@@ -17,6 +17,7 @@ export default function Home() {
   const [model, setModel] = useState("gpt-4.1-mini");
   const [cloudConversationId, setCloudConversationId] = useState<string | null>(null);
   const [cloudSyncNotice, setCloudSyncNotice] = useState("");
+  const [cloudMemoryNotes, setCloudMemoryNotes] = useState<{ title: string; content: string }[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -42,6 +43,15 @@ export default function Home() {
         const { data: sessionData } = await client.auth.getSession();
         const user = sessionData.session?.user;
         if (!user || !active) return;
+        const { data: memoryRows, error: memoryError } = await client
+          .from("memory_notes").select("title,content")
+          .eq("user_id", user.id).order("updated_at", { ascending: false }).limit(10);
+        if (memoryError) throw memoryError;
+        if (active && memoryRows) {
+          setCloudMemoryNotes(memoryRows.filter((note): note is { title: string; content: string } =>
+            typeof note.title === "string" && typeof note.content === "string"
+          ));
+        }
         const { data: rows, error: conversationError } = await client
           .from("conversations").select("id,title,updated_at")
           .eq("user_id", user.id).order("updated_at", { ascending: false }).limit(1);
@@ -96,7 +106,13 @@ export default function Home() {
           ).slice(0, 10).map(item => ({ title: item.title.slice(0, 120), content: item.content.slice(0, 1200) }));
         }
       } catch { /* Memory is optional; continue without it. */ }
-      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, memory, model }) });
+      const combinedMemory = [...memory, ...cloudMemoryNotes]
+        .reduce((acc, note) => {
+          if (!acc.some(existing => existing.title === note.title && existing.content === note.content)) acc.push(note);
+          return acc;
+        }, [] as { title: string; content: string }[])
+        .slice(0, 10);
+      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, memory: combinedMemory, model }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Požadavek se nezdařil.");
       const assistantMessage = { role: "assistant" as const, content: data.reply };

@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, X } from "lucide-react";
+import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string };
 const starters = [
@@ -111,6 +111,7 @@ export default function Home() {
       <button className="new-chat" onClick={() => {setMessages([]);setError("");setSidebarOpen(false);try{window.localStorage.removeItem("astra-ai-chat-v1")}catch{/* Ignore unavailable storage. */}}}><Plus size={17}/> Nová konverzace <span>⌘ K</span></button>
       <div className="side-label">PRACOVNÍ PROSTOR</div>
       <button className="side-link active"><Sparkles size={17}/> Chat <span className="active-dot"/></button>
+      <button className="side-link" onClick={() => { window.location.href = "/account"; }}><UserRound size={17}/> Účet / přihlášení</button>
       <button className="side-link" onClick={() => { window.location.href = "/memory"; }}><BrainCircuit size={17}/> Moje paměť</button>
       <button className="side-link" onClick={() => { window.location.href = "/code"; }}><Code2 size={17}/> Programování</button>
       <button className="side-link" onClick={() => { window.location.href = "/marketing"; }}><Megaphone size={17}/> Marketing</button>

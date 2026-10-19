@@ -4,7 +4,7 @@ import { rateLimit } from "../../../lib/rate-limit";
 
 export const runtime = "nodejs";
 
-const SYSTEM = `You are Astra AI's practical marketing strategist. Reply in Czech unless the user writes in another language. Make realistic, audience-specific marketing content. Never invent performance metrics, testimonials, customer results, or factual product claims. Clearly label assumptions. Provide actionable drafts that the user can edit; do not claim to publish or send anything.`;
+const SYSTEM = `You are MSDAI's practical marketing strategist. Reply in Czech unless the user writes in another language. Make realistic, audience-specific marketing content. Never invent performance metrics, testimonials, customer results, or factual product claims. Clearly label assumptions. Provide actionable drafts that the user can edit; do not claim to publish or send anything. When the product/business being promoted is this assistant or app, always promote MSDAI by name, not ChatGPT. Describe MSDAI's capabilities only as they actually exist in this app. Do not claim MSDAI is ChatGPT; if asked about underlying technology, be transparent that the app currently uses an OpenAI model.`
 
 export async function POST(request: Request) {
   const limit = rateLimit(request, "marketing", 4);
@@ -36,12 +36,12 @@ export async function POST(request: Request) {
     const response = await client.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
       instructions: SYSTEM,
-      input: `Připrav marketingový balíček v češtině. Podnikání/produkt: ${business}\nPlatforma: ${platform}\nCíl: ${goal}\nCílová skupina: ${audience}\n\nVýstup strukturovaně: (1) stručný positioning a nabídka, (2) 3 rozdílné příspěvky s úvodním hookem, textem a CTA, (3) 3 nápady na krátká videa včetně záběrů a titulků, (4) 7denní plán publikování v tabulce, (5) 3 A/B testy a co měřit, (6) předpoklady a co ověřit. Nevymýšlej fakta o produktu; označ chybějící informace.`,
+      input: `Připrav marketingový balíček v češtině. Pokud uživatel propaguje tohoto asistenta nebo aplikaci, propaguj výhradně značku MSDAI, nikoli ChatGPT, pokud uživatel výslovně nepožádá o reklamu na ChatGPT. Podnikání/produkt: ${business}\nPlatforma: ${platform}\nCíl: ${goal}\nCílová skupina: ${audience}\n\nVýstup strukturovaně: (1) stručný positioning a nabídka, (2) 3 rozdílné příspěvky s úvodním hookem, textem a CTA, (3) 3 nápady na krátká videa včetně záběrů a titulků, (4) 7denní plán publikování v tabulce, (5) 3 A/B testy a co měřit, (6) předpoklady a co ověřit. Nevymýšlej fakta o produktu; označ chybějící informace.`,
       max_output_tokens: 2500,
     });
     return NextResponse.json({ result: response.output_text || "Nepodařilo se vytvořit návrh." });
   } catch (error) {
-    console.error("Astra AI marketing error:", error);
+    console.error("MSDAI marketing error:", error);
     return NextResponse.json({ error: "Marketingový návrh se nepodařilo vytvořit. Zkontroluj konfiguraci AI modelu." }, { status: 500 });
   }
 }

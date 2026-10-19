@@ -1,44 +1,42 @@
-# Astra AI roadmap and status
+# Astra AI roadmap and verified status
+
+This checklist describes the codebase, not a guarantee that external providers are configured or that a feature has passed live production tests.
 
 ## Current foundation
-- [x] Responsive chat workspace
-- [x] Server-side text chat endpoint
-- [x] OpenAI web search tool in chat (current Responses API tool name)
-- [x] OpenAI Code Interpreter sandbox in chat for Python/data tasks
+- [x] Responsive Czech-language chat workspace
+- [x] Server-side text chat endpoint using OpenAI Responses API
+- [x] Optional OpenAI web search and Code Interpreter tools with fallback to basic chat
 - [x] Browser-local recent conversation history
-- [x] Server-side image generation endpoint
-- [x] Environment-based API key handling
-- [x] Build and lint verification in GitHub Actions
-- [x] User-managed local memory notes (browser only)
-- [x] Text and document attachment for common text formats plus PDF/DOCX extraction (5 MB limit)
-- [x] AI marketing draft workflow (posts, short-video ideas, calendar, A/B tests)
-- [ ] Deploy and configure environment variables
+- [x] User-managed local memory notes
+- [x] PDF/DOCX text extraction (5 MB limit; scanned PDFs need OCR)
+- [x] Server-side image generation endpoint (provider access must be tested)
+- [x] AI marketing drafts (no automatic publishing or analytics integration)
+- [x] Optional Replicate video endpoint and polling UI (model compatibility and provider access must be tested)
+- [x] Supabase browser client and email-link sign-in UI
+- [x] Explicit, opt-in first-version cloud sync for memory notes
+- [x] Environment-based secret handling, request-size guards, baseline security headers
+- [x] GitHub Actions lint and build workflow
 
-## Next: reliable workspace
-- [ ] Automated unit/integration/end-to-end tests
-- [ ] Account authentication
-- [ ] Persistent server-side conversations
-- [ ] Cloud-based user-controlled long-term memory with inspect/edit/delete controls
-- [x] PDF/Word text extraction (5 MB limit; scanned PDFs need OCR, which is not included)
-- [ ] Streaming responses, cancellation, and retry handling
-- [ ] Model/provider selection and usage limits
+## Still required for a complete product
+- [ ] Safe coding workspace that can edit user-selected project files, present reviewable diffs, and run approved tests in a genuinely isolated sandbox
+- [ ] Cloud conversation history and explicit cloud memory loading into AI context
+- [ ] Robust multi-device memory conflict resolution and reliable deletion/export flows
+- [ ] Automated unit, API integration, and end-to-end tests
+- [ ] Streaming responses, cancellation, retry handling, and better usage/cost feedback
+- [ ] Shared production-grade rate limiting, abuse protection, and request monitoring
+- [ ] Marketing integrations for social publishing and campaign analytics, with explicit user confirmation
+- [ ] OCR for scanned PDFs
+- [ ] Multi-provider routing and model selection
+- [ ] Mobile/accessibility QA, production smoke tests, and deployment monitoring
+- [ ] Dependency audit and committed, reproducible lockfile
 
-## Specialist capabilities
-- [ ] Coding agent that can safely edit project files, show diffs, and run approved tests in an isolated environment
-- [x] Optional Replicate video-generation endpoint and polling UI (requires provider credentials/model configuration)
-- [ ] Marketing integrations for publishing and campaign analytics
-- [ ] User confirmation before sending, publishing, or other consequential external actions
+## Public launch gate
 
-## Production hardening
-- [x] Basic in-process rate limiting and request-size guards
-- [ ] Shared production-grade rate limiting and abuse prevention
-- [ ] Authentication and per-user data isolation
-- [ ] Logging and monitoring without leaking sensitive content
-- [ ] Accessibility and mobile QA
-- [ ] Dependency audit and pinned lockfile
+A successful CI build verifies lint/build only. Before calling a feature production-ready, test it against the live deployment with the actual provider credentials and account permissions. Before enabling cloud data for general users, verify Supabase redirect settings and RLS isolation using at least two separate accounts. Do not advertise unavailable integrations as working.
 
 ## Principles
 - Be honest about capability boundaries.
 - Keep credentials server-side.
 - Require user confirmation for consequential external actions.
-- Measure quality with tests rather than making unsupported claims of superiority.
+- Never run untrusted generated code on the app server.
+- Measure quality with tests rather than making unsupported claims.

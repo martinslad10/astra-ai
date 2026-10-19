@@ -159,7 +159,7 @@ export default function MemoryPage() {
       <div className="memory-list-heading"><h2>Uložené poznámky</h2><span>{notes.length}/100</span></div>
       {notes.length === 0 ? <div className="memory-empty"><BrainCircuit size={24}/><strong>Zatím tu nic není</strong><span>První poznámku přidáš formulářem výše.</span></div> :
         <div className="memory-list">{notes.map(note => <article className="memory-note" key={note.id}><div className="memory-note-main"><h3>{note.title}</h3><p>{note.content}</p><time dateTime={note.updatedAt}>{new Date(note.updatedAt).toLocaleString("cs-CZ")}</time></div><button type="button" className="memory-delete" aria-label={`Smazat poznámku ${note.title}`} onClick={() => removeNote(note.id)}><Trash2 size={16}/></button></article>)}</div>}
-      <p className="image-disclaimer"><Save size={13} style={{display:"inline",verticalAlign:"-2px"}}/> Bez synchronizace zůstávají poznámky lokálně v prohlížeči. Synchronizace slučuje poznámky a nahrává je do cloudového účtu; smazání poznámky se při přihlášení také odešle do cloudu. Poznámky zatím nejsou automaticky přidávány do odpovědí AI.</p>
+      <p className="image-disclaimer"><Save size={13} style={{display:"inline",verticalAlign:"-2px"}}/> Bez synchronizace zůstávají poznámky lokálně v prohlížeči. Lokální poznámky se posílají jako kontext do chatu; cloudové poznámky se zatím samostatně automaticky nenačítají. Synchronizace je slučuje s poznámkami tohoto zařízení a při přihlášení se pokusí smazání přenést také do cloudu.</p>
     </section>
   </main>;
 }

@@ -113,8 +113,14 @@ export default function MemoryPage() {
       setNotes(synced.slice(0, 100));
       setNotice("Synchronizace dokončena. Poznámky z tohoto zařízení a cloudu byly sloučeny.");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Neznámá chyba";
-      setNotice("Cloudovou paměť se nepodařilo synchronizovat. Zkontroluj Supabase migraci a přihlášení. " + message);
+      const detail = error && typeof error === "object" && "message" in error
+        ? String((error as { message?: unknown }).message ?? "")
+        : error instanceof Error ? error.message : String(error ?? "");
+      const code = error && typeof error === "object" && "code" in error
+        ? String((error as { code?: unknown }).code ?? "")
+        : "";
+      const description = [code, detail].filter(Boolean).join(": ") || "Podrobnosti chyby nejsou dostupné.";
+      setNotice("Cloudovou paměť se nepodařilo synchronizovat. " + description);
     } finally {
       setCloudBusy(false);
     }

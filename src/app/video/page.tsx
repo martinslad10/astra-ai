@@ -56,7 +56,7 @@ export default function VideoPage() {
   }
 
   return <main className="image-page">
-    <header className="image-header"><Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do Astra AI</Link><div className="brand-mark"><Sparkles size={19}/></div><strong>Astra AI <span>/ Video</span></strong></header>
+    <header className="image-header"><Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MSDAI</Link><div className="brand-mark"><Sparkles size={19}/></div><strong>MSDAI <span>/ Video</span></strong></header>
     <section className="image-content">
       <div className="eyebrow"><Film size={14}/> GENEROVÁNÍ VIDEA</div>
       <h1>Dej nápadu<br/><span>pohyb.</span></h1>

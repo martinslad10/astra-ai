@@ -5,15 +5,22 @@ export const runtime = "nodejs";
 
 type Prediction = { id?: string; status?: string; output?: unknown; error?: unknown };
 
+function isValidModelIdentifier(value: string) {
+  return /^[a-z0-9_-]+\/[a-z0-9_.-]+$/i.test(value);
+}
+
 export async function POST(request: Request) {
   const limit = rateLimit(request, "video-create", 2);
   if (!limit.allowed) {
     return NextResponse.json({ error: "Příliš mnoho požadavků. Zkus to znovu později." }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } });
   }
   const token = process.env.REPLICATE_API_TOKEN;
-  const model = process.env.REPLICATE_VIDEO_MODEL;
+  const model = process.env.REPLICATE_VIDEO_MODEL?.trim();
   if (!token || !model) {
     return NextResponse.json({ error: "Video generování není nakonfigurované. Na serveru nastav REPLICATE_API_TOKEN a REPLICATE_VIDEO_MODEL (owner/model)." }, { status: 503 });
+  }
+  if (!isValidModelIdentifier(model)) {
+    return NextResponse.json({ error: "REPLICATE_VIDEO_MODEL musí mít formát owner/model." }, { status: 503 });
   }
 
   try {

@@ -69,9 +69,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Jedna zpráva je příliš dlouhá (limit 20 000 znaků)." }, { status: 413 });
     }
 
+    const requestedModel = "model" in body && typeof body.model === "string" ? body.model : "";
+    const allowedModels = new Set(["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"]);
+    const selectedModel = allowedModels.has(requestedModel)
+      ? requestedModel
+      : process.env.OPENAI_MODEL || "gpt-4.1-mini";
+
     const client = new OpenAI({ apiKey });
     const input = {
-      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      model: selectedModel,
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
       input: messages.map((m) => ({ role: m.role, content: m.content })),
       max_output_tokens: 2500,

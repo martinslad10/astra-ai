@@ -70,23 +70,39 @@ export async function POST(request: Request) {
     }
 
     const client = new OpenAI({ apiKey });
-    const response = await client.responses.create({
+    const input = {
       model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
       input: messages.map((m) => ({ role: m.role, content: m.content })),
-      tools: [
-        { type: "web_search_preview" },
-        { type: "code_interpreter", container: { type: "auto" } },
-      ],
       max_output_tokens: 2500,
-    });
+    } as const;
+
+    let response;
+    try {
+      response = await client.responses.create({
+        ...input,
+        tools: [
+          { type: "web_search_preview" },
+          { type: "code_interpreter", container: { type: "auto" } },
+        ],
+      });
+    } catch (toolError) {
+      // Keep basic chat usable if a restricted API key or account cannot use optional tools.
+      console.error("Astra AI optional tools failed; retrying without tools:", toolError);
+      response = await client.responses.create(input);
+    }
 
     return NextResponse.json({ reply: response.output_text || "Omlouvám se, nepodařilo se získat textovou odpověď." });
   } catch (error) {
     console.error("Astra AI chat error:", error);
-    return NextResponse.json(
-      { error: "Odpověď se nepodařilo získat. Zkontroluj konfiguraci AI modelu a zkus to znovu." },
-      { status: 500 },
-    );
+    const status = typeof error === "object" && error !== null && "status" in error && typeof error.status === "number"
+      ? error.status
+      : 500;
+    const message = status === 401 || status === 403
+      ? "OpenAI odmítlo API klíč nebo jeho oprávnění. Zkontroluj klíč a oprávnění Responses API ve Vercelu."
+      : status === 429
+        ? "OpenAI odmítlo požadavek kvůli limitu nebo fakturaci. Zkontroluj limity a fakturaci svého OpenAI API účtu."
+        : "Odpověď se nepodařilo získat. Zkontroluj nastavení modelu a zkus to znovu.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

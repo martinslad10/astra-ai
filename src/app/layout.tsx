@@ -6,22 +6,22 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://astra-ai-martinslad
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Astra AI — osobní AI pracovní prostor",
-    template: "%s | Astra AI",
+    default: "MSDAI — osobní AI pracovní prostor",
+    template: "%s | MSDAI",
   },
   description: "Samostatný AI pracovní prostor pro přemýšlení, programování, tvorbu obrázků, marketingové návrhy a analýzu dat.",
-  applicationName: "Astra AI",
+  applicationName: "MSDAI",
   openGraph: {
     type: "website",
     locale: "cs_CZ",
-    siteName: "Astra AI",
-    title: "Astra AI — osobní AI pracovní prostor",
-    description: "Přemýšlej, tvoř a stavěj s Astra AI.",
+    siteName: "MSDAI",
+    title: "MSDAI — osobní AI pracovní prostor",
+    description: "Přemýšlej, tvoř a stavěj s MSDAI.",
     url: "/",
   },
   twitter: {
     card: "summary",
-    title: "Astra AI — osobní AI pracovní prostor",
+    title: "MSDAI — osobní AI pracovní prostor",
     description: "Samostatný AI pracovní prostor pro přemýšlení, programování a kreativní práci.",
   },
 };

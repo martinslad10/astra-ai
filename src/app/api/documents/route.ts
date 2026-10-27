@@ -18,7 +18,7 @@ function toParagraphs(text: string) {
     if (trimmed.startsWith("# ")) return new Paragraph({ text: trimmed.slice(2), heading: HeadingLevel.HEADING_1, spacing: { before: 240, after: 120 } });
     if (trimmed.startsWith("## ")) return new Paragraph({ text: trimmed.slice(3), heading: HeadingLevel.HEADING_2, spacing: { before: 180, after: 100 } });
     if (/^[-*] /.test(trimmed)) return new Paragraph({ text: trimmed.slice(2), bullet: { level: 0 }, spacing: { after: 80 } });
-    if (/^\d+\. /.test(trimmed)) return new Paragraph({ text: trimmed.replace(/^\d+\. /, ""), numbering: { reference: "numbered-list", level: 0 }, spacing: { after: 80 } });
+    if (/^\d+\. /.test(trimmed)) return new Paragraph({ text: trimmed, spacing: { after: 80 } });
     return new Paragraph({ children: [new TextRun(trimmed)], spacing: { after: 120 } });
   });
 }

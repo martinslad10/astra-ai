@@ -93,14 +93,14 @@ export default function CodePage() {
 
   return <main className="image-page">
     <header className="image-header">
-      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MSDAI</Link>
+      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MARTINAI</Link>
       <div className="brand-mark"><Sparkles size={19}/></div>
-      <strong>MSDAI <span> / Programování</span></strong>
+      <strong>MARTINAI <span> / Programování</span></strong>
     </header>
     <section className="image-content">
       <div className="eyebrow"><Code2 size={14}/> PROGRAMOVACÍ ASISTENT</div>
       <h1>Od nápadu<br/><span>ke kódu.</span></h1>
-      <p className="image-intro">Popiš funkci nebo chybu a přidej relevantní zdrojové soubory. MSDAI připraví návrh řešení, který si můžeš zkopírovat nebo stáhnout ke kontrole.</p>
+      <p className="image-intro">Popiš funkci nebo chybu a přidej relevantní zdrojové soubory. MARTINAI připraví návrh řešení, který si můžeš zkopírovat nebo stáhnout ke kontrole.</p>
       <form className="image-form" onSubmit={generate}>
         <label htmlFor="code-task">Co chceš vytvořit nebo opravit?</label>
         <textarea id="code-task" value={task} onChange={e => setTask(e.target.value)} placeholder="Například: Oprav validaci formuláře a zachovej stávající design…" rows={5} maxLength={6000} required/>
@@ -120,7 +120,7 @@ export default function CodePage() {
       </form>
       {error && <div className="image-error" role="alert">{error}</div>}
       {busy && <div className="image-placeholder"><LoaderCircle className="spin" size={26}/><span>Analyzuji zadání a kontext…</span></div>}
-      {result && <section className="image-result code-result"><div className="image-result-footer"><strong>Návrh MSDAI</strong><div style={{display:"flex",gap:8}}><button type="button" onClick={() => void copyResult()}><Copy size={15}/> {copied ? "Zkopírováno" : "Kopírovat"}</button><button type="button" onClick={downloadResult}><Download size={15}/> Stáhnout .md</button></div></div><pre>{result}</pre></section>}
+      {result && <section className="image-result code-result"><div className="image-result-footer"><strong>Návrh MARTINAI</strong><div style={{display:"flex",gap:8}}><button type="button" onClick={() => void copyResult()}><Copy size={15}/> {copied ? "Zkopírováno" : "Kopírovat"}</button><button type="button" onClick={downloadResult}><Download size={15}/> Stáhnout .md</button></div></div><pre>{result}</pre></section>}
       <p className="image-disclaimer">Nahrané soubory se zpracovávají v prohlížeči a jejich text se odešle AI API jako kontext požadavku. Neodesílej tajné klíče, hesla ani osobní údaje. Tento nástroj zatím automaticky nemění soubory ani nespouští kód; návrh vždy zkontroluj a otestuj.</p>
     </section>
   </main>;

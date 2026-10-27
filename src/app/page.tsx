@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X } from "lucide-react";
+import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string };
 const starters = [
@@ -194,6 +194,7 @@ export default function Home() {
       <button className="side-link" onClick={() => { window.location.href = "/account"; }}><UserRound size={17}/> Účet / přihlášení</button>
       <button className="side-link" onClick={() => { window.location.href = "/memory"; }}><BrainCircuit size={17}/> Moje paměť</button>
       <button className="side-link" onClick={() => { window.location.href = "/code"; }}><Code2 size={17}/> Programování</button>
+      <button className="side-link" onClick={() => { window.location.href = "/documents"; }}><FileText size={17}/> Word / dokumenty</button>
       <button className="side-link" onClick={() => { window.location.href = "/marketing"; }}><Megaphone size={17}/> Marketing</button>
       <button className="side-link" onClick={() => { window.location.href = "/images"; }}><ImageIcon size={17}/> Obrázky</button>
       <button className="side-link" onClick={() => { window.location.href = "/video"; }}><Film size={17}/> Video</button>

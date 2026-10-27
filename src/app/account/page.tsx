@@ -43,7 +43,7 @@ export default function AccountPage() {
         options: { emailRedirectTo: redirectTo },
       });
       if (authError) throw authError;
-      setNotice("Odeslali jsme přihlašovací odkaz na e-mail. Otevři ho na tomto zařízení a vrať se do MARTINAI.");
+      setNotice("Odeslali jsme přihlašovací odkaz na e-mail. Otevři ho na tomto zařízení a vrať se do MARTIVEXA.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Přihlášení se nepodařilo.");
     } finally {
@@ -61,9 +61,9 @@ export default function AccountPage() {
 
   return <main className="memory-page">
     <header className="image-header">
-      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MARTINAI</Link>
+      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MARTIVEXA</Link>
       <div className="brand-mark"><UserRound size={19}/></div>
-      <strong>MARTINAI <span>/ Účet</span></strong>
+      <strong>MARTIVEXA <span>/ Účet</span></strong>
     </header>
     <section className="memory-content">
       <div className="eyebrow"><ShieldCheck size={14}/> ÚČET A SYNCHRONIZACE</div>

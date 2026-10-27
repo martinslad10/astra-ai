@@ -30,14 +30,14 @@ export default function ImagesPage() {
 
   return <main className="image-page">
     <header className="image-header">
-      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MARTINAI</Link>
+      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MARTIVEXA</Link>
       <div className="brand-mark"><Sparkles size={19}/></div>
-      <strong>MARTINAI <span> / Obrázky</span></strong>
+      <strong>MARTIVEXA <span> / Obrázky</span></strong>
     </header>
     <section className="image-content">
       <div className="eyebrow"><ImageIcon size={14}/> TVORBA OBRAZŮ</div>
       <h1>Proměň představu<br/><span>v obraz.</span></h1>
-      <p className="image-intro">Popiš scénu, styl, světlo a kompozici. MARTINAI odešle zadání do připojeného obrazového modelu.</p>
+      <p className="image-intro">Popiš scénu, styl, světlo a kompozici. MARTIVEXA odešle zadání do připojeného obrazového modelu.</p>
       <form className="image-form" onSubmit={generate}>
         <label htmlFor="image-prompt">Popis obrázku</label>
         <textarea id="image-prompt" value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Například: Fotorealistický futuristický ateliér v noci, měkké fialové světlo, filmová kompozice…" rows={5} maxLength={4000}/>

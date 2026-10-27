@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://astra-ai-martinslad10.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://martinai.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "MSDAI — osobní AI pracovní prostor",
-    template: "%s | MSDAI",
+    default: "MARTINAI — osobní AI pracovní prostor",
+    template: "%s | MARTINAI",
   },
   description: "Samostatný AI pracovní prostor pro přemýšlení, programování, tvorbu obrázků, marketingové návrhy a analýzu dat.",
-  applicationName: "MSDAI",
+  applicationName: "MARTINAI",
   openGraph: {
     type: "website",
     locale: "cs_CZ",
-    siteName: "MSDAI",
-    title: "MSDAI — osobní AI pracovní prostor",
-    description: "Přemýšlej, tvoř a stavěj s MSDAI.",
+    siteName: "MARTINAI",
+    title: "MARTINAI — osobní AI pracovní prostor",
+    description: "Přemýšlej, tvoř a stavěj s MARTINAI.",
     url: "/",
   },
   twitter: {
     card: "summary",
-    title: "MSDAI — osobní AI pracovní prostor",
+    title: "MARTINAI — osobní AI pracovní prostor",
     description: "Samostatný AI pracovní prostor pro přemýšlení, programování a kreativní práci.",
   },
 };

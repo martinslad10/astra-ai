@@ -142,14 +142,14 @@ export default function MemoryPage() {
 
   return <main className="memory-page">
     <header className="image-header">
-      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MSDAI</Link>
+      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MARTINAI</Link>
       <div className="brand-mark"><BrainCircuit size={19}/></div>
-      <strong>MSDAI <span>/ Moje paměť</span></strong>
+      <strong>MARTINAI <span>/ Moje paměť</span></strong>
     </header>
     <section className="memory-content">
       <div className="eyebrow"><BrainCircuit size={14}/> UŽIVATELSKY ŘÍZENÁ PAMĚŤ</div>
-      <h1>Astra si zapamatuje<br/><span>to důležité.</span></h1>
-      <p className="image-intro">Zapisuj si preference, cíle a informace, které chceš mít po ruce. Ve výchozím stavu se poznámky ukládají pouze v tomto prohlížeči. Synchronizace s cloudem je volitelná a vyžaduje účet MSDAI a nakonfigurovaný Supabase.</p>
+      <h1>MARTINAI si zapamatuje<br/><span>to důležité.</span></h1>
+      <p className="image-intro">Zapisuj si preference, cíle a informace, které chceš mít po ruce. Ve výchozím stavu se poznámky ukládají pouze v tomto prohlížeči. Synchronizace s cloudem je volitelná a vyžaduje účet MARTINAI a nakonfigurovaný Supabase.</p>
       <div className="memory-cloud-actions">
         <button type="button" onClick={syncWithCloud} disabled={cloudBusy || !ready}><Cloud size={16}/> {cloudBusy ? "Synchronizuji…" : "Synchronizovat s cloudem"}</button>
         <Link href="/account" className="back-link"><LogIn size={15}/> Účet / přihlášení</Link>

@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://martinai.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://martivexa.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "MARTINAI — osobní AI pracovní prostor",
-    template: "%s | MARTINAI",
+    default: "MARTIVEXA — osobní AI pracovní prostor",
+    template: "%s | MARTIVEXA",
   },
   description: "Samostatný AI pracovní prostor pro přemýšlení, programování, tvorbu obrázků, marketingové návrhy a analýzu dat.",
-  applicationName: "MARTINAI",
+  applicationName: "MARTIVEXA",
   openGraph: {
     type: "website",
     locale: "cs_CZ",
-    siteName: "MARTINAI",
-    title: "MARTINAI — osobní AI pracovní prostor",
-    description: "Přemýšlej, tvoř a stavěj s MARTINAI.",
+    siteName: "MARTIVEXA",
+    title: "MARTIVEXA — osobní AI pracovní prostor",
+    description: "Přemýšlej, tvoř a stavěj s MARTIVEXA.",
     url: "/",
   },
   twitter: {
     card: "summary",
-    title: "MARTINAI — osobní AI pracovní prostor",
+    title: "MARTIVEXA — osobní AI pracovní prostor",
     description: "Samostatný AI pracovní prostor pro přemýšlení, programování a kreativní práci.",
   },
 };

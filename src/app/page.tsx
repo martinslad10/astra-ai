@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
 import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X } from "lucide-react";
 
@@ -13,6 +14,7 @@ const starters = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [model, setModel] = useState("gpt-4.1-mini");
   const [cloudConversationId, setCloudConversationId] = useState<string | null>(null);
@@ -191,13 +193,13 @@ export default function Home() {
       <button className="new-chat" onClick={() => {setMessages([]);setCloudConversationId(null);setCloudSyncNotice("");setError("");setSidebarOpen(false);try{window.localStorage.removeItem("astra-ai-chat-v1")}catch{/* Ignore unavailable storage. */}}}><Plus size={17}/> Nová konverzace <span>⌘ K</span></button>
       <div className="side-label">PRACOVNÍ PROSTOR</div>
       <button className="side-link active"><Sparkles size={17}/> Chat <span className="active-dot"/></button>
-      <button className="side-link" onClick={() => { window.location.href = "/account"; }}><UserRound size={17}/> Účet / přihlášení</button>
-      <button className="side-link" onClick={() => { window.location.href = "/memory"; }}><BrainCircuit size={17}/> Moje paměť</button>
-      <button className="side-link" onClick={() => { window.location.href = "/code"; }}><Code2 size={17}/> Programování</button>
-      <button className="side-link" onClick={() => { window.location.href = "/documents"; }}><FileText size={17}/> Word / dokumenty</button>
-      <button className="side-link" onClick={() => { window.location.href = "/marketing"; }}><Megaphone size={17}/> Marketing</button>
-      <button className="side-link" onClick={() => { window.location.href = "/images"; }}><ImageIcon size={17}/> Obrázky</button>
-      <button className="side-link" onClick={() => { window.location.href = "/video"; }}><Film size={17}/> Video</button>
+      <button className="side-link" onClick={() => { router.push("/account"); }}><UserRound size={17}/> Účet / přihlášení</button>
+      <button className="side-link" onClick={() => { router.push("/memory"); }}><BrainCircuit size={17}/> Moje paměť</button>
+      <button className="side-link" onClick={() => { router.push("/code"); }}><Code2 size={17}/> Programování</button>
+      <button className="side-link" onClick={() => { router.push("/documents"); }}><FileText size={17}/> Word / dokumenty</button>
+      <button className="side-link" onClick={() => { router.push("/marketing"); }}><Megaphone size={17}/> Marketing</button>
+      <button className="side-link" onClick={() => { router.push("/images"); }}><ImageIcon size={17}/> Obrázky</button>
+      <button className="side-link" onClick={() => { router.push("/video"); }}><Film size={17}/> Video</button>
       <div className="sidebar-bottom"><div className="status-card"><span className="status-pulse"/><div><strong>Pracovní verze</strong><small>Vývoj právě začíná</small></div><Activity size={16}/></div><div className="profile-row"><div className="avatar">A</div><div><strong>MARTIVEXA</strong><small>Osobní AI prostor</small></div><ChevronDown size={15}/></div></div>
     </aside>
     <section className="main-panel">

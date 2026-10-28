@@ -8,14 +8,13 @@ import { getSupabaseBrowserClient } from "../../lib/supabase-browser";
 export default function AccountPage() {
   const [email, setEmail] = useState("");
   const [sessionEmail, setSessionEmail] = useState("");
-  const [configured, setConfigured] = useState(false);
+  const configured = Boolean(getSupabaseBrowserClient());
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     const client = getSupabaseBrowserClient();
-    setConfigured(Boolean(client));
     if (!client) return;
     void client.auth.getSession().then(({ data, error: sessionError }) => {
       if (sessionError) setError(sessionError.message);

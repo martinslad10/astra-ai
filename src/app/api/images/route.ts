@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     }
     const selfPromotionRequest = /s[aá]m na sebe|o sob[eě]|svou reklamu|reklam.{0,30}(?:msdai|asistent|sebe)|propaguj.{0,30}(?:msdai|asistent)/i.test(prompt);
     const imagePrompt = selfPromotionRequest
-      ? `${prompt}\n\nMANDATORY BRAND REQUIREMENTS: This is an advertisement for the independent product MSDAI. The only assistant/product brand name shown in the image must be exactly “MSDAI”. Do NOT show the name ChatGPT, the OpenAI logo, or any other AI company/product branding. Create a polished Czech-language promotional ad for MSDAI. If text is included, make “MSDAI” the prominent headline and use a short generic tagline such as “Tvůj AI asistent”. Do not imitate another company’s logo or visual identity.`
+      ? `${prompt}\n\nMANDATORY BRAND REQUIREMENTS: This is an advertisement for the independent product MARTIVEXA. The only assistant/product brand name shown in the image must be exactly “MARTIVEXA”. Do NOT show the name ChatGPT, the OpenAI logo, or any other AI company/product branding. Create a polished Czech-language promotional ad for MARTIVEXA. If text is included, make “MARTIVEXA” the prominent headline and use a short generic tagline such as “Tvůj AI asistent”. Do not imitate another company’s logo or visual identity.`
       : prompt;
     const client = new OpenAI({ apiKey });
     const result = await client.images.generate({
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ image: `data:image/png;base64,${image.b64_json}` });
   } catch (error) {
-    console.error("Astra AI image error:", error);
+    console.error("MARTIVEXA image error:", error);
     return NextResponse.json({ error: "Obrázek se nepodařilo vytvořit. Ověř dostupnost modelu a oprávnění API účtu." }, { status: 500 });
   }
 }

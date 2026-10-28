@@ -5,7 +5,7 @@ import { rateLimit } from "../../../lib/rate-limit";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const limit = rateLimit(request, "images", 3);
+  const limit = await rateLimit(request, "images", 3);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: "Příliš mnoho požadavků. Zkus to znovu za chvíli." },

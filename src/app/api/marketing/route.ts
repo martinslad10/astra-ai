@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 const SYSTEM = `You are MARTIVEXA's practical marketing strategist. Reply in Czech unless the user writes in another language. Make realistic, audience-specific marketing content. Never invent performance metrics, testimonials, customer results, or factual product claims. Clearly label assumptions. Provide actionable drafts that the user can edit; do not claim to publish or send anything. When the product/business being promoted is this assistant or app, always promote MARTIVEXA by name, not ChatGPT. Describe MARTIVEXA's capabilities only as they actually exist in this app. Do not claim MSDAI is ChatGPT; if asked about underlying technology, be transparent that the MARTIVEXA app currently uses an OpenAI model.`
 
 export async function POST(request: Request) {
-  const limit = rateLimit(request, "marketing", 4);
+  const limit = await rateLimit(request, "marketing", 4);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: "Příliš mnoho požadavků. Zkus to znovu za chvíli." },

@@ -22,6 +22,7 @@ export default function MemoryPage() {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed: unknown = JSON.parse(saved);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate browser-only localStorage after mount.
         if (Array.isArray(parsed)) setNotes(parsed.filter((n): n is MemoryNote =>
           n !== null && typeof n === "object" && "id" in n && "title" in n &&
           "content" in n && "updatedAt" in n &&
@@ -38,6 +39,7 @@ export default function MemoryPage() {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
     } catch {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- report a synchronous localStorage write failure to the user.
       setNotice("Paměť se nepodařilo uložit. V zařízení může být nedostatek místa.");
     }
   }, [notes, ready]);

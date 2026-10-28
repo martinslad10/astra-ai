@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Download, Image as ImageIcon, LoaderCircle, Sparkles } from "lucide-react";
 
 export default function ImagesPage() {
@@ -45,7 +46,7 @@ export default function ImagesPage() {
       </form>
       {error && <div className="image-error" role="alert">{error}</div>}
       {busy && <div className="image-placeholder"><LoaderCircle className="spin" size={26}/><span>Obrazový model pracuje…</span></div>}
-      {image && <div className="image-result"><img src={image} alt={prompt || "Vygenerovaný obrázek"}/><div className="image-result-footer"><span>Vygenerovaný obrázek</span><a href={image} download="astra-ai-image.png"><Download size={16}/> Uložit obrázek</a></div></div>}
+      {image && <div className="image-result"><Image src={image} alt={prompt || "Vygenerovaný obrázek"} width={1024} height={1024} unoptimized/><div className="image-result-footer"><span>Vygenerovaný obrázek</span><a href={image} download="martivexa-image.png"><Download size={16}/> Uložit obrázek</a></div></div>}
       <p className="image-disclaimer">Generování vyžaduje platný serverový OPENAI_API_KEY, dostupný model a příslušné oprávnění účtu. Použití může být zpoplatněno.</p>
     </section>
   </main>;

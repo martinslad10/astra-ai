@@ -24,7 +24,7 @@ function toParagraphs(text: string) {
 }
 
 export async function POST(request: Request) {
-  const limit = rateLimit(request, "documents", 4);
+  const limit = await rateLimit(request, "documents", 4);
   if (!limit.allowed) return NextResponse.json({ error: "Příliš mnoho požadavků. Zkus to znovu za chvíli." }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } });
   try {
     const apiKey = process.env.OPENAI_API_KEY;

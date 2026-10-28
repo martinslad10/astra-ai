@@ -9,7 +9,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_TEXT_CHARS = 100_000;
 
 export async function POST(request: Request) {
-  const limit = rateLimit(request, "file-extract", 8);
+  const limit = await rateLimit(request, "file-extract", 8);
   if (!limit.allowed) {
     return NextResponse.json({ error: "Příliš mnoho požadavků. Zkus to znovu za chvíli." }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } });
   }

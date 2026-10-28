@@ -6,8 +6,9 @@ const buckets = new Map<string, Bucket>();
  * but production deployments with multiple instances need a shared rate limiter.
  */
 export function rateLimit(request: Request, scope: string, limit: number, windowMs = 60_000) {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const address = forwarded || request.headers.get("x-real-ip") || "unknown";
+  const address = request.headers.get("x-real-ip")?.trim()
+    || request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim()
+    || "unknown";
   const key = scope + ":" + address;
   const now = Date.now();
   const current = buckets.get(key);

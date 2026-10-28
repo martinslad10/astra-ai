@@ -65,6 +65,14 @@ export async function rateLimit(
     }
   }
 
+  // In production, never silently downgrade to per-instance counters.
+  // Missing Redis credentials would otherwise allow requests to bypass limits
+  // across serverless instances. Local fallback remains available in development.
+  if (process.env.NODE_ENV === "production") {
+    console.error("[rate-limit] Shared Redis limiter is not configured in production");
+    return { allowed: false, remaining: 0, retryAfterSeconds: 60 };
+  }
+
   const key = scope + ":" + address;
   const now = Date.now();
   const current = localBuckets.get(key);

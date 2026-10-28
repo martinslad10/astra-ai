@@ -10,7 +10,7 @@ function isValidModelIdentifier(value: string) {
 }
 
 export async function POST(request: Request) {
-  const limit = rateLimit(request, "video-create", 2);
+  const limit = await rateLimit(request, "video-create", 2);
   if (!limit.allowed) {
     return NextResponse.json({ error: "Příliš mnoho požadavků. Zkus to znovu později." }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } });
   }
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const limit = rateLimit(request, "video-poll", 20);
+  const limit = await rateLimit(request, "video-poll", 20);
   if (!limit.allowed) return NextResponse.json({ error: "Příliš mnoho kontrol stavu. Zkus to za chvíli." }, { status: 429 });
   const token = process.env.REPLICATE_API_TOKEN;
   if (!token) return NextResponse.json({ error: "Chybí REPLICATE_API_TOKEN." }, { status: 503 });

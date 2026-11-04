@@ -1,6 +1,6 @@
-# Astra AI
+# ChatSLADAI
 
-Astra AI is an independent Czech-language AI workspace for reasoning, coding assistance, and creative workflows. It is a separate project from PODNIKAI.
+ChatSLADAI is an independent Czech-language AI workspace for reasoning, coding assistance, and creative workflows. It is a separate project from PODNIKAI.
 
 ## Available features in the current codebase
 
@@ -25,7 +25,7 @@ Astra AI is an independent Czech-language AI workspace for reasoning, coding ass
 - Cloud memory is an opt-in first version, not a robust multi-device conflict-resolution system. It requires a configured Supabase project, migration, auth redirect settings, and production testing.
 - Memory notes are not automatically loaded from Supabase into chat. The chat currently receives browser-local notes as optional context.
 - Video generation requires a compatible Replicate model, token, and provider credit.
-- Marketing outputs are drafts only. Astra AI does not publish to social networks or read campaign analytics.
+- Marketing outputs are drafts only. ChatSLADAI does not publish to social networks or read campaign analytics.
 - Rate limiting is in-process and is not sufficient by itself for high-traffic or abuse-prone public production use.
 - Health endpoint configuration flags show whether environment variables exist; they do not verify provider credentials, permissions, billing, or successful live requests.
 - Automated end-to-end coverage, cross-account RLS testing, accessibility/mobile QA, and live provider smoke tests remain necessary.

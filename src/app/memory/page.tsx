@@ -150,7 +150,7 @@ export default function MemoryPage() {
     </header>
     <section className="memory-content">
       <div className="eyebrow"><BrainCircuit size={14}/> UŽIVATELSKY ŘÍZENÁ PAMĚŤ</div>
-      <h1>MARTIVEXA si zapamatuje<br/><span>to důležité.</span></h1>
+      <h1>ChatSLADAI si zapamatuje<br/><span>to důležité.</span></h1>
       <p className="image-intro">Zapisuj si preference, cíle a informace, které chceš mít po ruce. Ve výchozím stavu se poznámky ukládají pouze v tomto prohlížeči. Synchronizace s cloudem je volitelná a vyžaduje účet MARTIVEXA a nakonfigurovaný Supabase.</p>
       <div className="memory-cloud-actions">
         <button type="button" onClick={syncWithCloud} disabled={cloudBusy || !ready}><Cloud size={16}/> {cloudBusy ? "Synchronizuji…" : "Synchronizovat s cloudem"}</button>

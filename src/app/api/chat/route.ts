@@ -163,10 +163,10 @@ export async function POST(request: Request) {
       try {
         const review = await client.responses.create({
           model: selectedModel,
-          instructions: SYSTEM_INSTRUCTIONS + "\\n\\nINTERNAL REVIEW PASS: You are the independent reviewer and synthesizer. Review the draft answer for factual gaps, unsupported claims, logical errors, missed constraints, safety issues, and practical weaknesses. Use the conversation as the source of truth. Correct errors, preserve useful detail, and produce one polished final answer directly to the user. Do not mention internal review or claim additional research/tools were used. If the draft is already sound, improve clarity without inventing changes.",
+          instructions: SYSTEM_INSTRUCTIONS + "\n\nINTERNAL REVIEW PASS: You are the independent reviewer and synthesizer. Review the draft answer for factual gaps, unsupported claims, logical errors, missed constraints, safety issues, and practical weaknesses. Use the conversation as the source of truth. Correct errors, preserve useful detail, and produce one polished final answer directly to the user. Do not mention internal review or claim additional research/tools were used. If the draft is already sound, improve clarity without inventing changes.",
           input: [
             ...messages.map((m) => ({ role: m.role, content: m.content })),
-            { role: "assistant" as const, content: "DRAFT ANSWER TO REVIEW:\\n" + reply },
+            { role: "assistant" as const, content: "DRAFT ANSWER TO REVIEW:\n" + reply },
             { role: "user" as const, content: "Zkontroluj a vylepši návrh podle instrukcí. Vrať pouze finální odpověď." },
           ],
           max_output_tokens: 5000,

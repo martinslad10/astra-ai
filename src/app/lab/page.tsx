@@ -42,7 +42,7 @@ export default function LabPage() {
       const response = await fetch("/api/lab", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, task: prompt, history: previousTurns }),
+        body: JSON.stringify({ mode, task: prompt, history: previousTurns.slice(-6).map(turn => ({ ...turn, content: turn.content.slice(0, 2200) })) }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Laboratoř úkol nedokončila.");

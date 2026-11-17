@@ -1,8 +1,8 @@
 'use client';
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BrainCircuit, FlaskConical, Lightbulb, Microscope, Code2, BriefcaseBusiness, Download, LoaderCircle, Sparkles, Send } from "lucide-react";
+import { ArrowLeft, BrainCircuit, FlaskConical, Lightbulb, Microscope, Code2, BriefcaseBusiness, Download, LoaderCircle, Sparkles, Send, Mic, Volume2, Square } from "lucide-react";
 
 type Mode = "research" | "invention" | "engineering" | "business";
 type Turn = { role: "user" | "assistant"; content: string };
@@ -26,7 +26,7 @@ export default function LabPage() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false);\n  const [voiceMode, setVoiceMode] = useState(false);\n  const [recording, setRecording] = useState(false);\n  const recorderRef = useRef<MediaRecorder | null>(null);
 
   async function run(event: FormEvent) {
     event.preventDefault();
@@ -48,7 +48,7 @@ export default function LabPage() {
       if (!response.ok) throw new Error(data.error || "Laboratoř úkol nedokončila.");
       const answer = data as Result;
       setResult(answer);
-      setTurns([...nextTurns, { role: "assistant", content: answer.report }]);
+      setTurns([...nextTurns, { role: "assistant", content: answer.report }]);\n      if (voiceMode) void speak(answer.report);
     } catch (err) {
       setTurns(previousTurns);
       setTask(prompt);
@@ -56,6 +56,44 @@ export default function LabPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function speak(text: string) {
+    try {
+      const response = await fetch("/api/audio/speech", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.slice(0, 8000) }) });
+      if (!response.ok) { const data = await response.json(); throw new Error(data.error || "Hlas se nepodařilo vytvořit."); }
+      const url = URL.createObjectURL(await response.blob());
+      const audio = new Audio(url);
+      audio.onended = () => URL.revokeObjectURL(url);
+      await audio.play();
+    } catch (e) { setError(e instanceof Error ? e.message : "Hlasový výstup se nezdařil."); }
+  }
+
+  async function toggleRecording() {
+    if (recording) { recorderRef.current?.stop(); return; }
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") throw new Error("Prohlížeč nepodporuje nahrávání hlasu nebo nemá povolený mikrofon.");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(type => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder.onstop = async () => {
+        setRecording(false); stream.getTracks().forEach(track => track.stop());
+        try {
+          const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+          const form = new FormData(); form.append("file", blob, blob.type.includes("mp4") ? "voice.m4a" : "voice.webm");
+          const response = await fetch("/api/audio/transcribe", { method: "POST", body: form });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Hlas se nepodařilo přepsat.");
+          if (typeof data.text === "string" && data.text.trim()) {
+            if (voiceMode) { setTask(data.text.trim()); setTimeout(() => { const form = document.querySelector<HTMLFormElement>(".image-form"); form?.requestSubmit(); }, 0); }
+            else setTask(current => (current.trim() ? current + " " : "") + data.text.trim());
+          }
+        } catch (e) { setError(e instanceof Error ? e.message : "Přepis hlasu se nezdařil."); }
+      };
+      recorderRef.current = recorder; recorder.start(); setRecording(true); setError("");
+    } catch (e) { setError(e instanceof Error ? e.message : "Mikrofon se nepodařilo spustit."); }
   }
 
   function download() {
@@ -91,7 +129,7 @@ export default function LabPage() {
       <form className="image-form" onSubmit={run}>
         <label htmlFor="lab-task">{turns.length ? "Na co chceš navázat nebo co mám změnit?" : "Co chceš vyřešit, prozkoumat nebo vymyslet?"}</label>
         <textarea id="lab-task" value={task} onChange={e => setTask(e.target.value)} placeholder={turns.length ? "Například: Rozpracuj variantu 2, navrhni konkrétní prototyp a uprav ho tak, aby byl levnější…" : "Popiš cíl, omezení a požadovaný výsledek. Laboratoř může navrhnout více variant a rozpracovat nejlepší z nich."} rows={5} maxLength={12000} required/>
-        <div className="image-form-footer"><span>{task.length}/12000 znaků</span><button type="submit" disabled={!task.trim() || busy}>{busy ? <><LoaderCircle className="spin" size={16}/> Pracuji…</> : <><Send size={16}/> {turns.length ? "Pokračovat v práci" : "Spustit laboratoř"}</>}</button></div>
+        <div className="image-form-footer"><span>{task.length}/12000 znaků</span><button type="button" onClick={() => setVoiceMode(v => !v)} className={voiceMode ? "tool-button voice-active" : "tool-button"}><Volume2 size={15}/> Hlasový režim</button><button type="button" onClick={() => void toggleRecording()} className={recording ? "tool-button voice-recording" : "tool-button"}>{recording ? <Square size={15}/> : <Mic size={15}/>} {recording ? "Zastavit" : "Mluvit"}</button><button type="submit" disabled={!task.trim() || busy}>{busy ? <><LoaderCircle className="spin" size={16}/> Pracuji…</> : <><Send size={16}/> {turns.length ? "Pokračovat v práci" : "Spustit laboratoř"}</>}</button></div>
       </form>
 
       {busy && <div className="image-placeholder" role="status"><LoaderCircle className="spin" size={26}/><span>Koordinátor plánuje, odborný tým tvoří a oponent kontroluje výsledek. Může to chvíli trvat…</span></div>}
@@ -108,7 +146,7 @@ export default function LabPage() {
         <div className="lab-conversation">
           {turns.map((turn, index) => <article className={turn.role === "user" ? "lab-turn lab-turn-user" : "lab-turn"} key={index}>
             <strong>{turn.role === "user" ? "Tvoje zadání" : "ChatSLADAI – laboratoř"}</strong>
-            <div className="lab-report">{turn.content}</div>
+            <div className="lab-report">{turn.content}</div>{turn.role === "assistant" && <button type="button" className="speak-message" onClick={() => void speak(turn.content)}><Volume2 size={15}/> Přečíst nahlas</button>}
           </article>)}
         </div>
       </section>}

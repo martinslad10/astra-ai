@@ -26,7 +26,10 @@ export default function LabPage() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);\n  const [voiceMode, setVoiceMode] = useState(false);\n  const [recording, setRecording] = useState(false);\n  const recorderRef = useRef<MediaRecorder | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
 
   async function run(event: FormEvent) {
     event.preventDefault();
@@ -48,7 +51,8 @@ export default function LabPage() {
       if (!response.ok) throw new Error(data.error || "Laboratoř úkol nedokončila.");
       const answer = data as Result;
       setResult(answer);
-      setTurns([...nextTurns, { role: "assistant", content: answer.report }]);\n      if (voiceMode) void speak(answer.report);
+      setTurns([...nextTurns, { role: "assistant", content: answer.report }]);
+      if (voiceMode) void speak(answer.report);
     } catch (err) {
       setTurns(previousTurns);
       setTask(prompt);

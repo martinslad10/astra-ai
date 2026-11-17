@@ -285,7 +285,7 @@ export default function Home() {
       const audioElement = remoteAudioRef.current;
       if (!audioElement) throw new Error("Zvukový přehrávač není připraven.");
       audioElement.autoplay = true;
-      audioElement.playsInline = true;
+      audioElement.setAttribute("playsinline", "");
       audioElement.muted = true;
       void audioElement.play().catch(() => undefined);
 

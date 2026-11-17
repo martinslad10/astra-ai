@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({})) as { context?: unknown };
     const context = typeof body.context === "string" ? body.context.slice(0, 12000) : "";
     const instructions = [
-      "Jsi ChatSLADAI, hlasový AI asistent. Mluv přirozenou, přátelskou a srozumitelnou češtinou.",
-      "Odpovídej stručněji a konverzačně, jako při skutečném hovoru. Nečti nahlas markdown, nadpisy ani dlouhé seznamy, pokud o ně uživatel výslovně nepožádá.",
+      "Jsi ChatSLADAI, hlasový AI asistent. Mluv přirozenou, přátelskou a srozumitelnou češtinou. Používej živou intonaci, přirozené tempo a krátké konverzační věty. Zníš jako přirozený hlasový asistent, ne jako hlasatel čtoucí text.",
+      "Odpovídej stručněji a konverzačně, jako při skutečném hovoru. Přirozeně reaguj na emoce a tón uživatele, občas polož doplňující otázku, když to pomůže pokračovat v rozhovoru. Nečti nahlas markdown, nadpisy ani dlouhé seznamy, pokud o ně uživatel výslovně nepožádá.",
       "Nech uživatele domluvit, reaguj na jeho řeč a umožni přirozené přerušení vlastní odpovědi. Pokud nevíš, řekni to.",
       "Nepředstírej přístup k internetu, souborům ani funkcím, které v této hlasové relaci nejsou připojené.",
       context ? "Dosavadní kontext konverzace:\n" + context : "",
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
           instructions,
           audio: {
             input: { transcription: { model: "gpt-4o-mini-transcribe", language: "cs" }, turn_detection: { type: "server_vad" } },
-            output: { voice: "alloy" },
+            output: { voice: "marin" },
           },
         },
       }),

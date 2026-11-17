@@ -39,7 +39,10 @@ export async function POST(request: Request) {
     }
     const task = body.task.trim();
     if (!task || task.length > 12_000) return NextResponse.json({ error: "Zadání musí mít 1 až 12 000 znaků." }, { status: 400 });
-    const historyRaw = "history" in body && Array.isArray(body.history) ? body.history : [];\n    const history = historyRaw.slice(-6).filter((item): item is { role: "user" | "assistant"; content: string } => !!item && typeof item === "object" && "role" in item && "content" in item && ((item as { role: unknown }).role === "user" || (item as { role: unknown }).role === "assistant") && typeof (item as { content: unknown }).content === "string").map(item => ({ role: item.role, content: item.content.slice(0, 2200) }));\n    const conversationContext = history.length ? "\\n\\nPŘEDCHOZÍ PRŮBĚH LABORATOŘE (kontext pro navázání, nikoli nové zadání):\\n" + history.map(item => (item.role === "user" ? "UŽIVATEL" : "LABORATOŘ") + ":\\n" + item.content).join("\\n\\n") : "";\n    const requestedMode = "mode" in body && typeof body.mode === "string" ? body.mode : "research";
+    const historyRaw = "history" in body && Array.isArray(body.history) ? body.history : [];
+    const history = historyRaw.slice(-6).filter((item): item is { role: "user" | "assistant"; content: string } => !!item && typeof item === "object" && "role" in item && "content" in item && ((item as { role: unknown }).role === "user" || (item as { role: unknown }).role === "assistant") && typeof (item as { content: unknown }).content === "string").map(item => ({ role: item.role, content: item.content.slice(0, 2200) }));
+    const conversationContext = history.length ? "\\n\\nPŘEDCHOZÍ PRŮBĚH LABORATOŘE (kontext pro navázání, nikoli nové zadání):\\n" + history.map(item => (item.role === "user" ? "UŽIVATEL" : "LABORATOŘ") + ":\\n" + item.content).join("\\n\\n") : "";
+    const requestedMode = "mode" in body && typeof body.mode === "string" ? body.mode : "research";
     const mode: LabMode = ["research", "invention", "engineering", "business"].includes(requestedMode) ? requestedMode as LabMode : "research";
     const model = process.env.OPENAI_MODEL || "gpt-4.1";
     const client = new OpenAI({ apiKey });

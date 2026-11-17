@@ -17,7 +17,8 @@ export default function Home() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [model, setModel] = useState("gpt-4.1-mini");
-  const [deepMode, setDeepMode] = useState(false);\n  const [imageMode, setImageMode] = useState(false);
+  const [deepMode, setDeepMode] = useState(false);
+  const [imageMode, setImageMode] = useState(false);
   const [cloudConversationId, setCloudConversationId] = useState<string | null>(null);
   const [cloudSyncNotice, setCloudSyncNotice] = useState("");
   const [cloudMemoryNotes, setCloudMemoryNotes] = useState<{ title: string; content: string }[]>([]);

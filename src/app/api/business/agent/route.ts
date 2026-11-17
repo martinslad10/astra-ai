@@ -7,12 +7,16 @@ export const runtime = "nodejs";
 
 type Action = "research_leads" | "delivery_plan" | "draft_outreach";
 
-function parseJson(text: string): any {
-  const cleaned = text.trim().replace(/^\`\`\`(?:json)?\s*/i, "").replace(/\s*\`\`\`$/, "");
+type JsonRecord = Record<string, unknown>;
+
+function parseJson(text: string): JsonRecord {
+  const cleaned = text.trim();
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
   if (start < 0 || end <= start) throw new Error("AI nevrátila platný strukturovaný výstup.");
-  return JSON.parse(cleaned.slice(start, end + 1));
+  const parsed: unknown = JSON.parse(cleaned.slice(start, end + 1));
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("AI nevrátila JSON objekt.");
+  return parsed as JsonRecord;
 }
 
 export async function POST(request: Request) {
@@ -84,30 +88,36 @@ Neuváděj e-mail ani jméno člověka, pokud nejsou výslovně a jednoznačně 
         max_output_tokens: 3000,
       });
       const parsed = parseJson(response.output_text || "");
-      const candidates = Array.isArray(parsed.leads) ? parsed.leads.slice(0, count) : [];
-      const valid = candidates.filter((lead: any) =>
-        lead && typeof lead.company_name === "string" && lead.company_name.trim() &&
-        typeof lead.source_url === "string" && /^https:\/\//i.test(lead.source_url)
-      );
+      const candidates: unknown[] = Array.isArray(parsed.leads) ? parsed.leads.slice(0, count) : [];
+      const valid = candidates.filter((lead): lead is JsonRecord => {
+        if (!lead || typeof lead !== "object" || Array.isArray(lead)) return false;
+        const row = lead as JsonRecord;
+        return typeof row.company_name === "string" && row.company_name.trim().length > 0 &&
+          typeof row.source_url === "string" && row.source_url.startsWith("https://");
+      });
       let saved = 0;
       for (const lead of valid) {
-        const website = typeof lead.website === "string" && /^https?:\/\//i.test(lead.website) ? lead.website : null;
+        const companyName = String(lead.company_name);
+        const sourceUrl = String(lead.source_url);
+        const websiteValue = typeof lead.website === "string" ? lead.website : "";
+        const website = websiteValue.startsWith("https://") || websiteValue.startsWith("http://") ? websiteValue : null;
         const { data: existing } = await supabase.from("business_leads").select("id")
           .eq("workspace_id", workspaceId).eq("user_id", user.id)
-          .eq("company_name", lead.company_name.trim()).limit(1);
+          .eq("company_name", companyName.trim()).limit(1);
         if (existing?.length) continue;
         const notes = [
           "Důvod shody: " + String(lead.fit_reason || "Neurčeno").slice(0, 1000),
           "Ověřené podklady: " + String(lead.evidence || "Neurčeno").slice(0, 1500),
-          "Zdroj: " + lead.source_url,
+          "Zdroj: " + sourceUrl,
         ].join("\n");
         const { error } = await supabase.from("business_leads").insert({
           workspace_id: workspaceId, user_id: user.id,
-          company_name: lead.company_name.trim().slice(0, 200),
-          website, source: String(lead.source_url).slice(0, 500),
+          company_name: companyName.trim().slice(0, 200),
+          website, source: sourceUrl.slice(0, 500),
           status: "new", notes,
         });
-        if (!error) saved++;
+        if (error) throw error;
+        saved++;
       }
       return NextResponse.json({ ok: true, action, summary: String(parsed.summary || "Výzkum dokončen."), found: valid.length, saved, message: valid.length ? "Potenciální klienti byli uloženi do CRM. Žádný nebyl automaticky osloven." : "Nepodařilo se najít dostatečně ověřené výsledky; databáze nebyla doplněna neověřenými kontakty." });
     }
@@ -122,13 +132,17 @@ Neuváděj e-mail ani jméno člověka, pokud nejsou výslovně a jednoznačně 
         max_output_tokens: 2200,
       });
       const parsed = parseJson(response.output_text || "");
-      const tasks = Array.isArray(parsed.tasks) ? parsed.tasks.slice(0, 10) : [];
-      const rows = tasks.filter((task: any) => task && typeof task.title === "string" && task.title.trim()).map((task: any) => ({
+      const tasks: unknown[] = Array.isArray(parsed.tasks) ? parsed.tasks.slice(0, 10) : [];
+      const rows = tasks.filter((task): task is JsonRecord => {
+        if (!task || typeof task !== "object" || Array.isArray(task)) return false;
+        const row = task as JsonRecord;
+        return typeof row.title === "string" && row.title.trim().length > 0;
+      }).map((task) => ({
         workspace_id: workspaceId, user_id: user.id,
-        title: task.title.slice(0, 240),
+        title: String(task.title).slice(0, 240),
         description: String(task.description || "").slice(0, 3000),
-        category: ["research","sales","delivery","marketing","finance","operations"].includes(task.category) ? task.category : "operations",
-        priority: ["low","normal","high","urgent"].includes(task.priority) ? task.priority : "normal",
+        category: typeof task.category === "string" && ["research","sales","delivery","marketing","finance","operations"].includes(task.category) ? task.category : "operations",
+        priority: typeof task.priority === "string" && ["low","normal","high","urgent"].includes(task.priority) ? task.priority : "normal",
         status: "todo", created_by: "ai",
       }));
       if (rows.length) {

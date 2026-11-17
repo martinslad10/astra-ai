@@ -196,6 +196,7 @@ export default function Home() {
       <button className="side-link active"><Sparkles size={17}/> Chat <span className="active-dot"/></button>
       <button className="side-link" onClick={() => { router.push("/account"); }}><UserRound size={17}/> Účet / přihlášení</button>
       <button className="side-link" onClick={() => { router.push("/memory"); }}><BrainCircuit size={17}/> Moje paměť</button>
+      <button className="side-link" onClick={() => { router.push("/lab"); }}><FlaskConical size={17}/> Výzkumná laboratoř <span className="soon">NOVÉ</span></button>
       <button className="side-link" onClick={() => { router.push("/code"); }}><Code2 size={17}/> Programování</button>
       <button className="side-link" onClick={() => { router.push("/documents"); }}><FileText size={17}/> Word / dokumenty</button>
       <button className="side-link" onClick={() => { router.push("/marketing"); }}><Megaphone size={17}/> Marketing</button>

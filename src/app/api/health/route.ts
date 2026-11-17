@@ -19,6 +19,8 @@ export function GET() {
       textFileAttachments: true,
       pdfDocxExtraction: true,
       marketingDraftsConfigured: openAiConfigured,
+      researchLabConfigured: openAiConfigured,
+      sharedRateLimitConfigured: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
       videoGenerationConfigured: videoConfigured,
     },
     notes: [

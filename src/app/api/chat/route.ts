@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     }
 
     const rawBody = await request.text();
-    if (Buffer.byteLength(rawBody, "utf8") > 150_000) {
+    if (Buffer.byteLength(rawBody, "utf8") > 12_000_000) {
       return NextResponse.json({ error: "Požadavek je příliš velký." }, { status: 413 });
     }
     let body: unknown;

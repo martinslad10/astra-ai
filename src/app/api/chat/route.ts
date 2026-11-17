@@ -157,7 +157,27 @@ export async function POST(request: Request) {
       response = await client.responses.create(input);
     }
 
-    return NextResponse.json({ reply: response.output_text || "Omlouvám se, nepodařilo se získat textovou odpověď." });
+    let reply = response.output_text || "Omlouvám se, nepodařilo se získat textovou odpověď.";
+    const deepMode = "depth" in body && body.depth === "deep";
+    if (deepMode && reply.trim()) {
+      try {
+        const review = await client.responses.create({
+          model: selectedModel,
+          instructions: SYSTEM_INSTRUCTIONS + "\\n\\nINTERNAL REVIEW PASS: You are the independent reviewer and synthesizer. Review the draft answer for factual gaps, unsupported claims, logical errors, missed constraints, safety issues, and practical weaknesses. Use the conversation as the source of truth. Correct errors, preserve useful detail, and produce one polished final answer directly to the user. Do not mention internal review or claim additional research/tools were used. If the draft is already sound, improve clarity without inventing changes.",
+          input: [
+            ...messages.map((m) => ({ role: m.role, content: m.content })),
+            { role: "assistant" as const, content: "DRAFT ANSWER TO REVIEW:\\n" + reply },
+            { role: "user" as const, content: "Zkontroluj a vylepši návrh podle instrukcí. Vrať pouze finální odpověď." },
+          ],
+          max_output_tokens: 5000,
+        });
+        if (review.output_text?.trim()) reply = review.output_text;
+      } catch (reviewError) {
+        console.error("ChatSLADAI deep review failed; returning first-pass answer:", reviewError);
+      }
+    }
+
+    return NextResponse.json({ reply, depth: deepMode ? "deep" : "standard" });
   } catch (error) {
     console.error("ChatSLADAI chat error:", error);
     const upstreamStatus = typeof error === "object" && error !== null && "status" in error && typeof error.status === "number"

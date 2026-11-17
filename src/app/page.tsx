@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X } from "lucide-react";
+import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X, FlaskConical } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string };
 const starters = [

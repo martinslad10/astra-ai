@@ -60,7 +60,7 @@ export default function BusinessPage() {
     setLoading(false);
   },[client]);
 
-  useEffect(()=>{ void load(); },[load]);
+  useEffect(()=>{ const run = async () => { await Promise.resolve(); await load(); }; void run(); },[load]);
 
   async function createWorkspace(e: FormEvent) {
     e.preventDefault();

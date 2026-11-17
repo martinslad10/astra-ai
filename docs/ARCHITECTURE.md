@@ -13,3 +13,8 @@
 - **Future agent tools:** scoped permissions, sandboxing, audit logs, and approval gates for external side effects.
 
 This is an actively developed foundation, not yet a full multi-agent or multimodal platform.
+
+
+## Research and invention lab
+
+The `/lab` interface calls `/api/lab`. The server runs a coordinator planning pass, a specialist execution pass (attempting optional web search and Code Interpreter), and an independent review pass. If optional tools are unavailable, the specialist pass retries without them and the result is marked accordingly. This is sequential model orchestration, not separate autonomous agents, and it cannot perform physical experiments or certify novelty.

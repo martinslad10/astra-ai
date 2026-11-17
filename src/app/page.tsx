@@ -441,7 +441,7 @@ export default function Home() {
       <button className="side-link" onClick={() => { router.push("/lab"); }}><FlaskConical size={17}/> Výzkumná laboratoř <span className="soon">NOVÉ</span></button>
       <button className="side-link" onClick={() => { router.push("/code"); }}><Code2 size={17}/> Programování</button>
       <button className="side-link" onClick={() => { router.push("/documents"); }}><FileText size={17}/> Word / dokumenty</button>
-      <button className="side-link" onClick={() => { router.push("/business"); setSidebarOpen(false); }}><BriefcaseBusiness size={17}/> Autonomní podnikání</button>
+      <button className="side-link" onClick={() => { router.push("/business"); setSidebarOpen(false); }}><BriefcaseBusiness size={17}/> Podnikání</button>
       <button className="side-link" onClick={() => { router.push("/marketing"); }}><Megaphone size={17}/> Marketing</button>
       <button className="side-link" onClick={() => { router.push("/images"); }}><ImageIcon size={17}/> Obrázky</button>
       <button className="side-link" onClick={() => { router.push("/video"); }}><Film size={17}/> Video</button>

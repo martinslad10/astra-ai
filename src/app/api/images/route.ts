@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       : prompt;
     const client = new OpenAI({ apiKey });
     const result = await client.images.generate({
-      model: "gpt-image-1",
+      model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-2.5-flare",
       prompt: imagePrompt,
       size: "1024x1024",
     });
@@ -50,7 +50,16 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ image: `data:image/png;base64,${image.b64_json}` });
   } catch (error) {
-    console.error("ChatSLADAI image error:", error);
-    return NextResponse.json({ error: "Obrázek se nepodařilo vytvořit. Ověř dostupnost modelu a oprávnění API účtu." }, { status: 500 });
+    const status = typeof error === "object" && error !== null && "status" in error && typeof error.status === "number" ? error.status : 500;
+    console.error("ChatSLADAI image provider failure:", { status, message: error instanceof Error ? error.message.slice(0, 300) : "unknown" });
+    return NextResponse.json({
+      error: status === 401 || status === 403
+        ? "OpenAI odmítlo API klíč nebo oprávnění ke generování obrázků."
+        : status === 429
+          ? "Generování obrázků narazilo na limit nebo fakturaci API."
+          : status === 400 || status === 404
+            ? "Zvolený model obrázků není dostupný. Zkontroluj OPENAI_IMAGE_MODEL a oprávnění účtu."
+            : "Obrázek se nepodařilo vytvořit. Zkus to znovu později.",
+    }, { status: status === 401 || status === 403 || status === 429 ? status : 502 });
   }
 }

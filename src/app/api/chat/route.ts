@@ -4,7 +4,7 @@ import { rateLimit } from "../../../lib/rate-limit";
 
 export const runtime = "nodejs";
 
-type ChatMessage = { role: "user" | "assistant"; content: string };
+type ChatMessage = { role: "user" | "assistant"; content: string; image?: string };
 type MemoryNote = { title: string; content: string };
 
 const SYSTEM_INSTRUCTIONS = `You are ChatSLADAI, a capable general-purpose AI assistant and practical problem-solving partner. Your goal is to help users understand, decide, create, plan, and execute work across a wide range of fields: science, technology, programming, business, finance, education, writing, marketing, health information, law and everyday life.
@@ -118,13 +118,13 @@ export async function POST(request: Request) {
       .filter((m): m is ChatMessage => m !== null && typeof m === "object" &&
         "role" in m && "content" in m &&
         ((m as ChatMessage).role === "user" || (m as ChatMessage).role === "assistant") &&
-        typeof (m as ChatMessage).content === "string")
+        typeof (m as ChatMessage).content === "string" && (!("image" in m) || typeof (m as ChatMessage).image === "string"))
       .slice(-30);
 
     if (messages.length === 0 || !messages.some((m) => m.role === "user")) {
       return NextResponse.json({ error: "Napiš nejprve zprávu." }, { status: 400 });
     }
-    if (messages.some((m) => m.content.length > 20000)) {
+    if (messages.some((m) => m.content.length > 20000 || (m.image && (!m.image.startsWith("data:image/") || m.image.length > 8_000_000)))) {
       return NextResponse.json({ error: "Jedna zpráva je příliš dlouhá (limit 20 000 znaků)." }, { status: 413 });
     }
 
@@ -135,10 +135,18 @@ export async function POST(request: Request) {
       : process.env.OPENAI_MODEL || "gpt-4.1-mini";
 
     const client = new OpenAI({ apiKey });
+    const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
+    const imageIntent = /\\b(vytvoř|vygeneruj|nakresli|namaluj|udělej|udělej mi|generate|create|draw|paint)\\b.{0,70}\\b(obrázek|fotku|fotografie|ilustraci|grafiku|logo|image|picture|photo|illustration)\\b|\\b(obrázek|fotku|ilustraci|grafiku|logo|image|picture|photo)\\b.{0,50}\\b(vytvoř|vygeneruj|nakresli|udělej|generate|create|draw)\\b/i.test(lastUserMessage?.content || "");
+    if (imageIntent && lastUserMessage) {
+      const generated = await client.images.generate({ model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-2.5-flare", prompt: lastUserMessage.content.slice(0, 4000), size: "1024x1024" });
+      const b64 = generated.data?.[0]?.b64_json;
+      if (!b64) return NextResponse.json({ error: "Model nevrátil obrazová data." }, { status: 502 });
+      return NextResponse.json({ reply: "Obrázek je hotový. Můžeš mi napsat, co na něm chceš upravit nebo vytvořit jinak.", image: `data:image/png;base64,${b64}`, depth: "standard" });
+    }
     const input = {
       model: selectedModel,
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
-      input: messages.map((m) => ({ role: m.role, content: m.content })),
+      input: messages.map((m) => ({ role: m.role, content: m.image && m.role === "user" ? [{ type: "input_text" as const, text: m.content }, { type: "input_image" as const, image_url: m.image }] : m.content })),
       max_output_tokens: 5000,
     } as const;
 

@@ -95,3 +95,5 @@
 .voice-active{color:#d7d0ff!important;border-color:#635a8c!important;background:#25213e!important;border-radius:7px;padding:6px 9px!important}
 .voice-recording{color:#ffb9bd!important;border-color:#a44b55!important;background:#3b1d25!important;border-radius:7px;padding:6px 9px!important}
 .chat-generated-image{max-width:100%;object-fit:contain}
+
+.voice-audio-output{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-10000px;}

@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     const doc = new Document({
       creator: "ChatSLADAI",
       title,
-      description: "Dokument vytvořený nebo upravený pomocí MARTIVEXA",
+      description: "Dokument vytvořený nebo upravený pomocí ChatSLADAI",
       sections: [{ properties: {}, children: toParagraphs(output) }],
     });
     const buffer = await Packer.toBuffer(doc);

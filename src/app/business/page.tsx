@@ -31,15 +31,25 @@ export default function BusinessPage() {
     setLoading(true); setError("");
     const { data: session } = await client.auth.getSession();
     setEmail(session.session?.user.email ?? "");
+    setAccessToken(session.session?.access_token ?? "");
     if (!session.session?.user) { setLoading(false); return; }
     const [w,a] = await Promise.all([
       client.from("business_workspaces").select("id,name,business_type,description,status,monthly_budget,autonomy_level,created_at").order("created_at",{ascending:false}),
-      client.from("business_approvals").select("id,workspace_id,title,action_type,risk_level,requested_at,status").eq("status","pending").order("requested_at",{ascending:false})
+      client.from("business_approvals").select("id,workspace_id,title,action_type,risk_level,requested_at,status,payload").eq("status","pending").order("requested_at",{ascending:false})
     ]);
     if (w.error) setError(w.error.message);
     else setWorkspaces((w.data ?? []) as Workspace[]);
     if (a.error) setError(a.error.message);
     else setApprovals((a.data ?? []) as Approval[]);
+    const ids = (w.data ?? []).map(item => item.id);
+    if (ids.length) {
+      const [l,t] = await Promise.all([
+        client.from("business_leads").select("id,workspace_id,company_name,website,status,notes,created_at").in("workspace_id",ids).order("created_at",{ascending:false}).limit(100),
+        client.from("business_tasks").select("id,workspace_id,title,description,category,status,priority").in("workspace_id",ids).order("created_at",{ascending:false}).limit(100)
+      ]);
+      if (l.error) setError(l.error.message); else setLeads((l.data ?? []) as Lead[]);
+      if (t.error) setError(t.error.message); else setTasks((t.data ?? []) as BusinessTask[]);
+    } else { setLeads([]); setTasks([]); }
     setLoading(false);
   },[client]);
 
@@ -122,7 +132,7 @@ export default function BusinessPage() {
       <div className="business-section-title"><div><h2>Pracovní úkoly</h2><p>AI může připravit konkrétní kroky a kritéria dokončení.</p></div><span>{tasks.filter(t=>t.status!=="done").length} otevřených</span></div>
       {tasks.length===0 ? <div className="business-empty compact"><strong>Žádné pracovní úkoly.</strong><span>Zadej výše zakázku a nech AI připravit plán realizace.</span></div> : <div className="business-approval-list">{tasks.map(task=><div className="business-approval" key={task.id}><div><strong>{task.title}</strong><small>{task.category} · {task.priority} · {task.status}</small><small>{task.description}</small></div></div>)}</div>}
       <div className="business-section-title approval-heading"><div><h2>Bezpečnostní schvalování</h2><p>Rizikové kroky musí projít tvým rozhodnutím.</p></div></div>
-      {approvals.length===0 ? <div className="business-empty compact"><ShieldCheck size={23}/><strong>Žádné čekající požadavky.</strong><span>Jakmile AI připraví akci vyžadující souhlas, zobrazí se zde.</span></div> : <div className="business-approval-list">{approvals.map(a=><div className="business-approval" key={a.id}><div><span>{a.action_type.replaceAll("_"," ")} · riziko {a.risk_level}</span><strong>{a.title}</strong><small>{new Date(a.requested_at).toLocaleString("cs-CZ")}</small></div><div><button onClick={()=>void decide(a.id,"approved")}><Check size={14}/> Schválit</button><button onClick={()=>void decide(a.id,"rejected")}><X size={14}/> Zamítnout</button></div></div>)}</div>}
+      {approvals.length===0 ? <div className="business-empty compact"><ShieldCheck size={23}/><strong>Žádné čekající požadavky.</strong><span>Jakmile AI připraví akci vyžadující souhlas, zobrazí se zde.</span></div> : <div className="business-approval-list">{approvals.map(a=><div className="business-approval" key={a.id}><div><span>{a.action_type.replaceAll("_"," ")} · riziko {a.risk_level}</span><strong>{a.title}</strong><small>{new Date(a.requested_at).toLocaleString("cs-CZ")}</small>{a.payload?.draft && <p style={{whiteSpace:"pre-wrap"}}>{a.payload.draft}</p>}</div><div><button onClick={()=>void decide(a.id,"approved")}><Check size={14}/> Schválit</button><button onClick={()=>void decide(a.id,"rejected")}><X size={14}/> Zamítnout</button></div></div>)}</div>}
 
       <div className="business-roadmap"><h2>Co se bude přidávat dál</h2><div><span>01</span><p><strong>AI průzkum trhu a hledání příležitostí</strong><small>Legální zdroje, vyhodnocení poptávky a konkurence.</small></p><span className="roadmap-state">Další etapa</span></div><div><span>02</span><p><strong>CRM a obchodní pipeline</strong><small>Evidence leadů, kvalifikace, návrhy oslovení a follow-up.</small></p><span className="roadmap-state">Plánováno</span></div><div><span>03</span><p><strong>Výroba a dodání zakázek</strong><small>AI specialisté, kontrola kvality a předání klientovi.</small></p><span className="roadmap-state">Plánováno</span></div><div><span>04</span><p><strong>Finance a automatizace</strong><small>Fakturace, platby, rozpočty a auditní stopa.</small></p><span className="roadmap-state">Plánováno</span></div></div>
       <p className="business-footnote">AI nyní umí vyhledat veřejně dohledatelné firmy, uložit ověřené kandidáty do CRM, navrhnout obchodní oslovení ke schválení a rozdělit zakázku na úkoly. Zprávy neposílá, smlouvy nepodepisuje, peníze neutratí a digitální zakázky zatím sama nevykonává bez dalšího propojení nástrojů a schvalování.</p>

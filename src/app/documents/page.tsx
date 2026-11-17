@@ -56,9 +56,9 @@ export default function DocumentsPage() {
 
   return <main className="memory-page">
     <header className="image-header">
-      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do MARTIVEXA</Link>
+      <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do ChatSLADAI</Link>
       <div className="brand-mark"><FileText size={19}/></div>
-      <strong>MARTIVEXA <span>/ Word a dokumenty</span></strong>
+      <strong>ChatSLADAI <span>/ Word a dokumenty</span></strong>
     </header>
     <section className="memory-content">
       <div className="eyebrow"><FileText size={14}/> DOKUMENTOVÁ DÍLNA</div>
@@ -81,7 +81,7 @@ export default function DocumentsPage() {
         <div className="memory-form-footer"><span>{instructions.length}/6000 znaků</span><button type="submit" disabled={!instructions.trim() || busy || (mode === "edit" && !file)}>{busy ? <><LoaderCircle className="spin" size={16}/> Pracuji…</> : <><Sparkles size={16}/> {mode === "create" ? "Vytvořit DOCX" : "Upravit a vytvořit DOCX"}</>}</button></div>
       </form>
       {error && <p className="image-error" role="alert">{error}</p>}
-      {busy && <div className="memory-empty"><LoaderCircle className="spin" size={24}/><span>MARTIVEXA připravuje dokument…</span></div>}
+      {busy && <div className="memory-empty"><LoaderCircle className="spin" size={24}/><span>ChatSLADAI připravuje dokument…</span></div>}
       {downloadUrl && <section className="marketing-result"><h2>Dokument je připraven</h2><p>{result}</p><a className="document-download" href={downloadUrl} download={(title.trim() || "dokument").replace(/[^\p{L}\p{N}_ -]/gu, "").trim().replace(/\s+/g, "-") + ".docx"}><Download size={16}/> Stáhnout soubor Word (.docx)</a></section>}
       <p className="image-disclaimer">Při úpravách pracuj s kopií dokumentu. Zkontroluj výstup, zejména čísla, právní texty, tabulky a důležité údaje. Zatím se negarantuje zachování složitého původního rozvržení, obrázků a všech tabulek.</p>
     </section>

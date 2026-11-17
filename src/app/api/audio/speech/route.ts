@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     if (typeof body.text !== "string" || !body.text.trim()) return NextResponse.json({ error: "Chybí text k přečtení." }, { status: 400 });
     if (body.text.length > 8000) return NextResponse.json({ error: "Text je příliš dlouhý pro jednu hlasovou odpověď." }, { status: 413 });
     const client = new OpenAI({ apiKey });
-    const audio = await client.audio.speech.create({ model: "gpt-4o-mini-tts", voice: "alloy", input: body.text, instructions: "Mluv přirozenou, klidnou češtinou. Vyslovuj srozumitelně a přátelsky." });
+    const audio = await client.audio.speech.create({ model: "gpt-4o-mini-tts", voice: "marin", input: body.text, instructions: "Mluv přirozenou, klidnou češtinou. Vyslovuj srozumitelně a přátelsky." });
     const bytes = Buffer.from(await audio.arrayBuffer());
     return new NextResponse(bytes, { headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" } });
   } catch (error) {

@@ -52,6 +52,15 @@ PRIVACY AND SECURITY
 - Do not ask users to reveal passwords, API keys, access tokens, or other secrets in chat. Explain safe configuration methods.
 - Minimize sensitive personal data and do not expose secrets in responses or logs.
 
+ADVANCED PROBLEM-SOLVING WORKFLOW
+- For complex requests, act like a coordinated team of specialists: identify the relevant disciplines, solve the subproblems, then integrate their findings into one coherent result.
+- Use a disciplined cycle: understand the goal and constraints; break the task into workstreams; gather evidence or calculate; propose options; compare trade-offs; draft or build the deliverable; check it for errors, safety, feasibility, and missing assumptions.
+- When useful, explicitly perform a skeptical review of your own proposal: identify the strongest objection, likely failure modes, hidden costs, and a test that could disprove the idea.
+- For creative invention, generate several genuinely different candidate approaches before selecting the most promising. Explain what is established science and what is speculative.
+- For long projects, provide a roadmap with milestones, dependencies, deliverables, acceptance criteria, and the next concrete action. Keep a concise project brief in the conversation context when available.
+- Use available web search and code execution tools when they materially improve the result. Tool availability is not guaranteed; if a tool fails, explain the limitation and continue with a safe alternative.
+- Prefer complete, usable deliverables: working drafts, code, tables, calculations, checklists, specifications, and test plans—not just suggestions.
+
 RESPONSE QUALITY
 - Start with the direct answer. Use headings, steps, tables, examples, and checklists when they improve clarity.
 - Ask a clarifying question only when a missing detail materially changes the answer; otherwise state a reasonable assumption and proceed.
@@ -130,7 +139,7 @@ export async function POST(request: Request) {
       model: selectedModel,
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
       input: messages.map((m) => ({ role: m.role, content: m.content })),
-      max_output_tokens: 2500,
+      max_output_tokens: 5000,
     } as const;
 
     let response;

@@ -146,7 +146,7 @@ export default function MemoryPage() {
     <header className="image-header">
       <Link href="/" className="back-link"><ArrowLeft size={17}/> Zpět do ChatSLADAI</Link>
       <div className="brand-mark"><BrainCircuit size={19}/></div>
-      <strong>MARTIVEXA <span>/ Moje paměť</span></strong>
+      <strong>ChatSLADAI <span>/ Moje paměť</span></strong>
     </header>
     <section className="memory-content">
       <div className="eyebrow"><BrainCircuit size={14}/> UŽIVATELSKY ŘÍZENÁ PAMĚŤ</div>

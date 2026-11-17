@@ -47,13 +47,13 @@ export async function POST(request: Request) {
     const plan = await client.responses.create({
       model,
       instructions: BASE_RULES + "\n\nJsi KOORDINÁTOR. Připrav stručný pracovní plán: disciplíny/role, otázky, které je nutné vyřešit, potřebné důkazy a kritéria kvalitního výsledku. Neodpovídej ještě finálním řešením.",
-      input: "Režim: " + mode + "\nZadání uživatele:\n" + task,
+      input: "Režim: " + mode + "\nKontext předchozí konverzace:\n" + (conversationContext || "První zadání.") + "\nAktuální požadavek uživatele:\n" + task,
       max_output_tokens: 1200,
     });
 
     const specialistInstructions = BASE_RULES + "\n\n" + MODE_GUIDANCE[mode] +
       "\n\nJsi realizační tým specialistů. Následuj plán koordinátora, ale oprav jej, pokud je chybný. Vrať úplný, strukturovaný pracovní výstup. Zdroje cituj pouze tehdy, když je skutečně poskytl nástroj.";
-    const specialistInput = "ZADÁNÍ:\n" + task + "\n\nPLÁN KOORDINÁTORA:\n" + (plan.output_text || "Proveď samostatnou analýzu.");
+    const specialistInput = "KONTEXT KONVERZACE:\n" + (conversationContext || "Jde o první zadání.") + "\n\nAKTUÁLNÍ POŽADAVEK UŽIVATELE (na něj odpověz a pokračuj v práci):\n" + task + "\n\nPLÁN KOORDINÁTORA:\n" + (plan.output_text || "Proveď samostatnou analýzu.");
     let specialist;
     let toolsUsed = false;
     try {
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       const review = await client.responses.create({
         model,
         instructions: BASE_RULES + "\n\nJsi nezávislý oponent a editor. Hledej logické chyby, neověřená tvrzení, chybějící alternativy, rizika, nereálné kroky a rozpory. Oprav návrh a vrať finální report. Zachovej užitečné detaily. Nevymýšlej nové zdroje ani výsledky.",
-        input: "Původní zadání:\n" + task + "\n\nPracovní výstup specialistů:\n" + draft + "\n\nProveď kritickou kontrolu a vrať finální výsledek včetně jasného oddělení faktů, předpokladů a doporučení.",
+        input: "Kontext předchozí konverzace:\n" + (conversationContext || "První zadání.") + "\n\nAktuální požadavek uživatele:\n" + task + "\n\nPracovní výstup specialistů:\n" + draft + "\n\nProveď kritickou kontrolu a vrať finální výsledek včetně jasného oddělení faktů, předpokladů a doporučení. Navazuj na předchozí práci, neopakuj bez potřeby staré části.",
         max_output_tokens: 6500,
       });
       if (review.output_text?.trim()) { finalReport = review.output_text.trim(); reviewPassed = true; }

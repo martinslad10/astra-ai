@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     if (!text) return NextResponse.json({ error: "Dokument neobsahuje čitelný text. U skenovaného PDF je potřeba OCR, které zatím není součástí aplikace." }, { status: 422 });
     return NextResponse.json({ text, truncated: extracted.length > MAX_TEXT_CHARS });
   } catch (error) {
-    console.error("Astra AI document extraction error:", error);
+    console.error("ChatSLADAI document extraction error:", error);
     return NextResponse.json({ error: "Dokument se nepodařilo zpracovat. Zkontroluj, že soubor není poškozený nebo chráněný heslem." }, { status: 422 });
   }
 }

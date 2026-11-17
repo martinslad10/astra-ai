@@ -41,7 +41,7 @@ export async function POST(request: Request) {
           model: "gpt-realtime-2.1",
           instructions,
           audio: {
-            input: { turn_detection: { type: "server_vad" } },
+            input: { transcription: { model: "gpt-4o-mini-transcribe", language: "cs" }, turn_detection: { type: "server_vad" } },
             output: { voice: "alloy" },
           },
         },

@@ -73,9 +73,9 @@ export default function BusinessPage() {
   }
 
   return <main className="business-page">
-    <header className="business-header"><Link href="/" className="business-back"><ArrowLeft size={16}/> Zpět do chatu</Link><div className="business-brand"><BriefcaseBusiness size={19}/> <strong>ChatSLADAI <span>Autonomous Business</span></strong></div><button className="business-refresh" onClick={()=>void load()}><RefreshCw size={14}/> Obnovit</button></header>
+    <header className="business-header"><Link href="/" className="business-back"><ArrowLeft size={16}/> Zpět do chatu</Link><div className="business-brand"><BriefcaseBusiness size={19}/> <strong>ChatSLADAI <span>Podnikání</span></strong></div><button className="business-refresh" onClick={()=>void load()}><RefreshCw size={14}/> Obnovit</button></header>
     <section className="business-content">
-      <div className="business-hero"><div className="business-eyebrow">MULTI-BUSINESS CONTROL CENTER</div><h1>Podnikání, které<br/><span>pracuje za tebe.</span></h1><p>Spravuj více podniků na jednom místě. AI bude postupně přebírat průzkum, obchod, tvorbu a provoz — s kontrolou nad rizikovými kroky.</p><div className="business-actions"><button onClick={()=>setShowForm(v=>!v)}><Plus size={16}/> Přidat podnik</button><span><ShieldCheck size={14}/> Bezpečnostní režim: schválení před akcí</span></div></div>
+      <div className="business-hero"><div className="business-eyebrow">FUNKCE CHATSLADAI</div><h1>Správa podnikání<br/><span>na jednom místě.</span></h1><p>Rozšiř ChatSLADAI o podnikatelské projekty. Pro každý projekt může AI připravovat průzkum, obchodní příležitosti, práci a provozní úkoly. Ty si zachováváš kontrolu nad důležitými kroky.</p><div className="business-actions"><button onClick={()=>setShowForm(v=>!v)}><Plus size={16}/> Přidat podnik</button><span><ShieldCheck size={14}/> Bezpečnostní režim: schválení před akcí</span></div></div>
 
       {!client && <div className="business-alert"><CircleAlert size={18}/> Cloudový účet není nakonfigurovaný. Nejprve nastav Supabase a přihlášení.</div>}
       {client && !loading && !email && <div className="business-alert"><CircleAlert size={18}/> Pro správu podniků se nejprve <Link href="/account">přihlas ke svému účtu</Link>.</div>}

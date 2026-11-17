@@ -7,7 +7,7 @@ export function GET() {
 
   return NextResponse.json({
     status: "ok",
-    app: "MARTIVEXA",
+    app: "ChatSLADAI",
     environment: process.env.NODE_ENV || "unknown",
     capabilities: {
       chatConfigured: openAiConfigured,

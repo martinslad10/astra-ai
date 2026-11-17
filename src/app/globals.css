@@ -84,3 +84,14 @@
 .lab-turn-user>strong{color:#9dd9c9}
 .lab-turn .lab-report{white-space:pre-wrap;overflow-wrap:anywhere;color:#c5cad7;font-size:12px;line-height:1.8;padding:0;background:transparent;border:0}
 .lab-conversation .lab-turn-user .lab-report{color:#aeb6c8}
+
+
+/* Chat photo and voice controls */
+.pending-image{position:relative;display:inline-flex;margin:0 0 10px 8px;padding:5px;border:1px solid #393b50;border-radius:10px;background:#151827}
+.pending-image img{width:74px;height:74px;object-fit:cover;border-radius:7px}
+.pending-image button{position:absolute;top:2px;right:2px;display:grid;place-items:center;width:22px;height:22px;border:0;border-radius:50%;background:#171a25;color:#fff;cursor:pointer}
+.speak-message{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 8px;border:1px solid #34384a;border-radius:7px;background:transparent;color:#aeb5c9;font-size:11px;cursor:pointer}
+.speak-message:hover{color:#e1ddff;border-color:#69618e}
+.voice-active{color:#d7d0ff!important;border-color:#635a8c!important;background:#25213e!important;border-radius:7px;padding:6px 9px!important}
+.voice-recording{color:#ffb9bd!important;border-color:#a44b55!important;background:#3b1d25!important;border-radius:7px;padding:6px 9px!important}
+.chat-generated-image{max-width:100%;object-fit:contain}

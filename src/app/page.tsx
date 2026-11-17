@@ -97,6 +97,15 @@ export default function Home() {
     const next: Message[] = [...messages, { role: "user", content }];
     setMessages(next); setDraft(""); setError(""); setBusy(true);
     try {
+      if (imageMode) {
+        const imageResponse = await fetch("/api/images", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: content }) });
+        const imageData = await imageResponse.json();
+        if (!imageResponse.ok) throw new Error(imageData.error || "Obrázek se nepodařilo vytvořit.");
+        if (typeof imageData.image !== "string" || !imageData.image.startsWith("data:image/")) throw new Error("Model nevrátil platný obrázek.");
+        setMessages([...next, { role: "assistant", content: "Obrázek vytvořen. Můžeš mi napsat, co na něm chceš změnit.", image: imageData.image }]);
+        setImageMode(false);
+        return;
+      }
       let memory: { title: string; content: string }[] = [];
       try {
         const savedMemory = window.localStorage.getItem("astra-ai-memory-v1");

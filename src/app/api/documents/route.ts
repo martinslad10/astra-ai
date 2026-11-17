@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     const buffer = await Packer.toBuffer(doc);
     return NextResponse.json({ docxBase64: buffer.toString("base64"), preview: output.slice(0, 2500), title });
   } catch (error) {
-    console.error("MARTIVEXA document error:", error);
+    console.error("ChatSLADAI document error:", error);
     return NextResponse.json({ error: "Dokument se nepodařilo vytvořit. Zkontroluj nastavení AI a formát nahraného souboru." }, { status: 500 });
   }
 }

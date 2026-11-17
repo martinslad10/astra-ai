@@ -6,6 +6,7 @@ ChatSLADAI is an independent Czech-language AI workspace for reasoning, coding a
 
 - Responsive Czech-language chat workspace
 - Server-side text chat through the OpenAI Responses API
+- Optional deep-thinking mode with a second model pass that critiques and improves the first answer (uses additional API tokens and may cost more)
 - Optional OpenAI web search and hosted Code Interpreter tools; access depends on API-key permissions, model support, and account billing
 - Browser-local recent chat transcript
 - User-managed local memory notes with add/delete controls
@@ -16,17 +17,17 @@ ChatSLADAI is an independent Czech-language AI workspace for reasoning, coding a
 - Optional video-generation integration via Replicate with status polling; the configured model must accept the submitted input schema
 - AI marketing drafts: social posts, short-video concepts, a 7-day content plan, and A/B test ideas
 - Server-side environment-variable handling for provider credentials
-- Request-size validation and lightweight per-process rate limits
+- Request-size validation and rate limits using Upstash when configured, with a bounded per-process fallback if the shared service is unavailable
 
 ## Important limitations before a public launch
 
 - The coding page generates code suggestions. It does not yet edit arbitrary project files or execute user/generated code in an isolated workspace.
 - Chat history is stored in the browser and is not synchronized to the cloud.
 - Cloud memory is an opt-in first version, not a robust multi-device conflict-resolution system. It requires a configured Supabase project, migration, auth redirect settings, and production testing.
-- Memory notes are not automatically loaded from Supabase into chat. The chat currently receives browser-local notes as optional context.
+- Chat can receive browser-local memory notes and, when configured and signed in, the latest cloud memory notes as optional context.
 - Video generation requires a compatible Replicate model, token, and provider credit.
 - Marketing outputs are drafts only. ChatSLADAI does not publish to social networks or read campaign analytics.
-- Rate limiting is in-process and is not sufficient by itself for high-traffic or abuse-prone public production use.
+- The fallback rate limiter is per serverless instance and is not a substitute for a healthy shared Upstash limiter or edge-level abuse protection.
 - Health endpoint configuration flags show whether environment variables exist; they do not verify provider credentials, permissions, billing, or successful live requests.
 - Automated end-to-end coverage, cross-account RLS testing, accessibility/mobile QA, and live provider smoke tests remain necessary.
 

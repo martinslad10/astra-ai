@@ -34,6 +34,9 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const speechAudioRef = useRef<HTMLAudioElement | null>(null);
+  const speechUrlRef = useRef<string | null>(null);
+  const speechRequestRef = useRef(0);
   useEffect(() => {
     let active = true;
     async function restoreHistory() {
@@ -162,15 +165,52 @@ export default function Home() {
   }
 
   async function speakText(text: string) {
+    const requestId = ++speechRequestRef.current;
+    // Keep only one player alive: repeated taps or voice mode must never overlap.
+    if (speechAudioRef.current) {
+      speechAudioRef.current.pause();
+      speechAudioRef.current.removeAttribute("src");
+      speechAudioRef.current.load();
+      speechAudioRef.current = null;
+    }
+    if (speechUrlRef.current) {
+      URL.revokeObjectURL(speechUrlRef.current);
+      speechUrlRef.current = null;
+    }
     try {
-      const response = await fetch("/api/audio/speech", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.slice(0, 8000) }) });
-      if (!response.ok) { const data = await response.json(); throw new Error(data.error || "Hlas se nepodařilo vytvořit."); }
+      const response = await fetch("/api/audio/speech", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.slice(0, 8000) }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Hlas se nepodařilo vytvořit.");
+      }
       const audioBlob = await response.blob();
+      if (requestId !== speechRequestRef.current) return;
       const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      audio.onended = () => URL.revokeObjectURL(audioUrl);
+      speechUrlRef.current = audioUrl;
+      const audio = new Audio();
+      audio.preload = "auto";
+      audio.src = audioUrl;
+      speechAudioRef.current = audio;
+      audio.onended = () => {
+        if (speechAudioRef.current === audio) speechAudioRef.current = null;
+        if (speechUrlRef.current === audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+          speechUrlRef.current = null;
+        }
+      };
       await audio.play();
-    } catch (e) { setError(e instanceof Error ? e.message : "Hlasový výstup se nezdařil."); }
+      setError("");
+    } catch (e) {
+      if (requestId !== speechRequestRef.current) return;
+      const blocked = e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError");
+      setError(blocked
+        ? "iPhone nebo Safari zablokoval přehrání zvuku. Klepni znovu na „Přečíst nahlas“ a povol přehrávání zvuku."
+        : e instanceof Error ? e.message : "Hlasový výstup se nezdařil.");
+    }
   }
 
   async function toggleRecording() {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { rateLimit } from "../../../lib/rate-limit";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 type LabMode = "research" | "invention" | "engineering" | "business";
 

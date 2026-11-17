@@ -146,7 +146,7 @@ export async function POST(request: Request) {
     const input = {
       model: selectedModel,
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
-      input: messages.map((m) => ({ role: m.role, content: m.image && m.role === "user" ? [{ type: "input_text" as const, text: m.content }, { type: "input_image" as const, image_url: m.image }] : m.content })),
+      input: messages.map((m) => m.role === "user" ? { role: "user" as const, content: m.image ? [{ type: "input_text" as const, text: m.content }, { type: "input_image" as const, image_url: m.image }] : m.content } : { role: "assistant" as const, content: m.content }),
       max_output_tokens: 5000,
     } as const;
 

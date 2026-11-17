@@ -208,7 +208,7 @@ export default function Home() {
   async function handleFile(file?: File) {
     if (!file) return;
     if (file.type.startsWith("image/")) {
-      if (file.size > 8 * 1024 * 1024) { setError("Fotografie je příliš velká. Limit je 8 MB."); return; }
+      if (file.size > 6 * 1024 * 1024) { setError("Fotografie je příliš velká. Limit je 6 MB."); return; }
       const reader = new FileReader();
       reader.onload = () => { if (typeof reader.result === "string") { setPendingImage(reader.result); setError(""); } };
       reader.onerror = () => setError("Fotografii se nepodařilo načíst.");

@@ -21,6 +21,9 @@ export default function Home() {
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
+  const [liveVoiceConnecting, setLiveVoiceConnecting] = useState(false);
+  const [liveVoiceActive, setLiveVoiceActive] = useState(false);
+  const [liveVoiceStatus, setLiveVoiceStatus] = useState("");
   const [cloudConversationId, setCloudConversationId] = useState<string | null>(null);
   const [cloudSyncNotice, setCloudSyncNotice] = useState("");
   const [cloudMemoryNotes, setCloudMemoryNotes] = useState<{ title: string; content: string }[]>([]);
@@ -39,6 +42,10 @@ export default function Home() {
   const speechSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const speechUrlRef = useRef<string | null>(null);
   const speechRequestRef = useRef(0);
+  const livePeerRef = useRef<RTCPeerConnection | null>(null);
+  const liveStreamRef = useRef<MediaStream | null>(null);
+  const liveChannelRef = useRef<RTCDataChannel | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   useEffect(() => {
     let active = true;
     async function restoreHistory() {
@@ -245,6 +252,102 @@ export default function Home() {
     }
   }
 
+  async function stopLiveVoice() {
+    liveChannelRef.current?.close();
+    liveChannelRef.current = null;
+    livePeerRef.current?.close();
+    livePeerRef.current = null;
+    liveStreamRef.current?.getTracks().forEach(track => track.stop());
+    liveStreamRef.current = null;
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.pause();
+      remoteAudioRef.current.srcObject = null;
+    }
+    setLiveVoiceActive(false);
+    setLiveVoiceConnecting(false);
+    setVoiceMode(false);
+    setLiveVoiceStatus("");
+  }
+
+  async function startLiveVoice() {
+    if (liveVoiceActive || liveVoiceConnecting) {
+      await stopLiveVoice();
+      return;
+    }
+    setLiveVoiceConnecting(true);
+    setLiveVoiceStatus("Připojuji hlasového asistenta…");
+    setError("");
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Pro živý hlas otevři ChatSLADAI v Safari a povol přístup k mikrofonu.");
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      liveStreamRef.current = stream;
+      const recentContext = messages.slice(-16).map(m => (m.role === "user" ? "Uživatel: " : "ChatSLADAI: ") + m.content).join("\n").slice(-12000);
+      const tokenResponse = await fetch("/api/audio/realtime-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ context: recentContext }),
+      });
+      const tokenData = await tokenResponse.json();
+      if (!tokenResponse.ok || typeof tokenData.client_secret !== "string") {
+        throw new Error(tokenData.error || "Živý hlas se nepodařilo připravit.");
+      }
+
+      const peer = new RTCPeerConnection();
+      livePeerRef.current = peer;
+      const audioElement = remoteAudioRef.current;
+      if (!audioElement) throw new Error("Zvukový přehrávač není připraven.");
+      audioElement.autoplay = true;
+      audioElement.playsInline = true;
+      peer.ontrack = event => {
+        audioElement.srcObject = event.streams[0];
+        void audioElement.play().catch(() => setLiveVoiceStatus("Klepni na přehrávač zvuku, pokud iPhone blokuje automatické přehrávání."));
+      };
+      stream.getTracks().forEach(track => peer.addTrack(track, stream));
+      const channel = peer.createDataChannel("oai-events");
+      liveChannelRef.current = channel;
+      channel.onopen = () => {
+        setLiveVoiceActive(true);
+        setLiveVoiceConnecting(false);
+        setVoiceMode(true);
+        setLiveVoiceStatus("Připojeno – můžeš přirozeně mluvit.");
+      };
+      channel.onmessage = event => {
+        try {
+          const payload = JSON.parse(event.data) as { type?: string; transcript?: string; item?: { content?: { transcript?: string }[] }; delta?: string };
+          if (payload.type === "conversation.item.input_audio_transcription.completed" && payload.transcript) {
+            setMessages(current => [...current, { role: "user", content: payload.transcript! }]);
+          } else if (payload.type === "response.output_audio_transcript.done" && payload.transcript) {
+            setMessages(current => [...current, { role: "assistant", content: payload.transcript! }]);
+          }
+        } catch { /* Ignore non-JSON Realtime events. */ }
+      };
+      peer.onconnectionstatechange = () => {
+        if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
+          setLiveVoiceActive(false);
+          setVoiceMode(false);
+          if (peer.connectionState === "failed") setError("Spojení hlasového režimu se přerušilo. Zkus se připojit znovu.");
+        }
+      };
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      const sdpResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + tokenData.client_secret, "Content-Type": "application/sdp" },
+        body: offer.sdp,
+      });
+      if (!sdpResponse.ok) throw new Error("OpenAI odmítlo připojení živého hlasu (" + sdpResponse.status + ").");
+      const answer = await sdpResponse.text();
+      await peer.setRemoteDescription({ type: "answer", sdp: answer });
+    } catch (e) {
+      await stopLiveVoice();
+      setError(e instanceof Error ? e.message : "Živý hlas se nepodařilo spustit.");
+    } finally {
+      setLiveVoiceConnecting(false);
+    }
+  }
+
   async function toggleRecording() {
     if (isRecording) { recorderRef.current?.stop(); return; }
     try {
@@ -344,7 +447,7 @@ export default function Home() {
       <div className={`conversation ${messages.length ? "conversation-active" : ""}`}>
         {messages.length === 0 ? <div className="welcome"><div className="eyebrow"><WandSparkles size={14}/> VÁŠ NOVÝ PRACOVNÍ PROSTOR</div><h1>Velké nápady začínají<br/><span>jednou otázkou.</span></h1><p className="welcome-subtitle">Přemýšlej, tvoř a stavěj. Jedno místo pro práci s AI — postupně vybavené nástroji, které potřebuješ.</p><div className="starter-grid">{starters.map(({icon:Icon,title,text}) => <button className="starter-card" key={title} onClick={() => void send(text)}><div className="starter-icon"><Icon size={18}/></div><strong>{title}</strong><span>{text}</span><ArrowUp className="starter-arrow" size={15}/></button>)}</div><div className="trust-line"><span><Check size={13}/> Samostatný projekt</span><span><Check size={13}/> Soukromí na prvním místě</span><span><Check size={13}/> Postupně rozšiřitelné</span></div></div> : <div className="message-list">{messages.map((m,i) => <div className={`message ${m.role}`} key={`${i}-${m.role}`}><div className="message-avatar">{m.role === "assistant" ? <Sparkles size={16}/> : "Ty"}</div><div className="message-content"><div className="message-role">{m.role === "assistant" ? "ChatSLADAI" : "Ty"}</div><p>{m.content}</p>{m.image && <img className="chat-generated-image" src={m.image} alt={m.role === "user" ? "Fotografie přiložená uživatelem" : "Obrázek vytvořený v ChatSLADAI"} />}{m.role === "assistant" && !m.image && <button type="button" className="speak-message" onClick={() => void speakText(m.content)} aria-label="Přečíst odpověď nahlas"><Volume2 size={15}/> Přečíst nahlas</button>}</div></div>)}{busy && <div className="message assistant"><div className="message-avatar"><Sparkles size={16}/></div><div className="message-content"><div className="message-role">ChatSLADAI</div><div className="typing"><span/><span/><span/></div></div></div>}<div ref={bottomRef}/></div>}
       </div>
-      <div className="composer-area">{error && <div className="error-banner"><span>{error}</span><button aria-label="Zavřít upozornění" onClick={() => setError("")}><X size={15}/></button></div>}<form className="composer" onSubmit={onSubmit}>{pendingImage && <div className="pending-image"><img src={pendingImage} alt="Připravená fotografie" /><button type="button" onClick={() => setPendingImage(null)} aria-label="Odebrat fotografii"><X size={14}/></button></div>}<textarea ref={textareaRef} value={draft} onChange={e => setDraft(e.target.value)} placeholder="Na co dnes společně přijdeme? (Můžeš také požádat o vytvoření obrázku.)" rows={1} onKeyDown={e => {if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();void send()}}}/><div className="composer-footer"><div className="composer-tools"><button type="button" className="tool-button" onClick={() => imageInputRef.current?.click()}><ImageIcon size={16}/><span>Přidat fotografii</span></button><input ref={imageInputRef} className="hidden-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={e => { void handleFile(e.target.files?.[0]); e.currentTarget.value = ""; }} /><button type="button" className="tool-button" onClick={() => fileInputRef.current?.click()}><Paperclip size={16}/><span>Připojit soubor</span></button><input ref={fileInputRef} className="hidden-file-input" type="file" accept=".txt,.md,.csv,.json,.html,.xml,.log,.pdf,.docx,text/plain,text/markdown,text/csv,application/json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={e => { void handleFile(e.target.files?.[0]); e.currentTarget.value = ""; }} /><label className="composer-note deep-mode-toggle"><input type="checkbox" checked={deepMode} onChange={e => setDeepMode(e.target.checked)} /> Hluboké myšlení <span title="Druhá kontrolní fáze odpovědi; může trvat déle a spotřebovat více API kreditu.">ⓘ</span></label><button type="button" className={voiceMode ? "tool-button voice-active" : "tool-button"} onClick={() => setVoiceMode(v => !v)} aria-pressed={voiceMode}><Volume2 size={15}/><span>Hlasový režim</span></button><button type="button" className={isRecording ? "tool-button voice-recording" : "tool-button"} onClick={() => void toggleRecording()} aria-label={isRecording ? "Zastavit nahrávání" : "Mluvit do chatu"}>{isRecording ? <Square size={15}/> : <Mic size={15}/>}<span>{isRecording ? "Zastavit" : "Mluvit"}</span></button><span className="composer-note">Enter pro odeslání · Shift + Enter pro nový řádek</span></div><button className="send-button" type="submit" disabled={!draft.trim()||busy} aria-label="Odeslat zprávu">{busy ? <span className="send-spinner"/> : <ArrowUp size={18}/>}</button></div></form><p className="disclaimer">ChatSLADAI se vyvíjí. Ověřuj důležité informace a nesdílej tajné údaje.</p></div>
+      <div className="composer-area">{liveVoiceStatus && <div className="cloud-sync-notice" role="status">{liveVoiceStatus}</div>}<audio ref={remoteAudioRef} className="hidden-file-input" autoPlay playsInline />{error && <div className="error-banner"><span>{error}</span><button aria-label="Zavřít upozornění" onClick={() => setError("")}><X size={15}/></button></div>}<form className="composer" onSubmit={onSubmit}>{pendingImage && <div className="pending-image"><img src={pendingImage} alt="Připravená fotografie" /><button type="button" onClick={() => setPendingImage(null)} aria-label="Odebrat fotografii"><X size={14}/></button></div>}<textarea ref={textareaRef} value={draft} onChange={e => setDraft(e.target.value)} placeholder="Na co dnes společně přijdeme? (Můžeš také požádat o vytvoření obrázku.)" rows={1} onKeyDown={e => {if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();void send()}}}/><div className="composer-footer"><div className="composer-tools"><button type="button" className="tool-button" onClick={() => imageInputRef.current?.click()}><ImageIcon size={16}/><span>Přidat fotografii</span></button><input ref={imageInputRef} className="hidden-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={e => { void handleFile(e.target.files?.[0]); e.currentTarget.value = ""; }} /><button type="button" className="tool-button" onClick={() => fileInputRef.current?.click()}><Paperclip size={16}/><span>Připojit soubor</span></button><input ref={fileInputRef} className="hidden-file-input" type="file" accept=".txt,.md,.csv,.json,.html,.xml,.log,.pdf,.docx,text/plain,text/markdown,text/csv,application/json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={e => { void handleFile(e.target.files?.[0]); e.currentTarget.value = ""; }} /><label className="composer-note deep-mode-toggle"><input type="checkbox" checked={deepMode} onChange={e => setDeepMode(e.target.checked)} /> Hluboké myšlení <span title="Druhá kontrolní fáze odpovědi; může trvat déle a spotřebovat více API kreditu.">ⓘ</span></label><button type="button" className={liveVoiceActive ? "tool-button voice-active" : "tool-button"} onClick={() => void startLiveVoice()} aria-pressed={liveVoiceActive} disabled={liveVoiceConnecting}><Volume2 size={15}/><span>{liveVoiceConnecting ? "Připojuji…" : liveVoiceActive ? "Ukončit hlas" : "Živý hlas"}</span></button><button type="button" className={isRecording ? "tool-button voice-recording" : "tool-button"} onClick={() => void toggleRecording()} aria-label={isRecording ? "Zastavit nahrávání" : "Mluvit do chatu"}>{isRecording ? <Square size={15}/> : <Mic size={15}/>}<span>{isRecording ? "Zastavit" : "Mluvit"}</span></button><span className="composer-note">Enter pro odeslání · Shift + Enter pro nový řádek</span></div><button className="send-button" type="submit" disabled={!draft.trim()||busy} aria-label="Odeslat zprávu">{busy ? <span className="send-spinner"/> : <ArrowUp size={18}/>}</button></div></form><p className="disclaimer">ChatSLADAI se vyvíjí. Ověřuj důležité informace a nesdílej tajné údaje.</p></div>
     </section>
   </main>;
 }

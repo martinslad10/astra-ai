@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     if (messages.length === 0 || !messages.some((m) => m.role === "user")) {
       return NextResponse.json({ error: "Napiš nejprve zprávu." }, { status: 400 });
     }
-    if (messages.some((m) => m.content.length > 20000 || (m.image && (!m.image.startsWith("data:image/") || m.image.length > 8_000_000)))) {
+    if (messages.some((m) => m.content.length > 20000 || (m.image && (!m.image.startsWith("data:image/") || m.image.length > 7_000_000)))) {
       return NextResponse.json({ error: "Jedna zpráva je příliš dlouhá (limit 20 000 znaků)." }, { status: 413 });
     }
 

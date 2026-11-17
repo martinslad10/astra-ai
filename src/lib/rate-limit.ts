@@ -58,21 +58,17 @@ export async function rateLimit(
           : Math.max(1, Math.ceil((result.reset - Date.now()) / 1000)),
       };
     } catch (error) {
-      // Fail closed when shared limiting is configured but unavailable. This
-      // prevents a Redis outage from silently disabling production protection.
-      console.error("[rate-limit] Shared limiter unavailable", error);
-      return { allowed: false, remaining: 0, retryAfterSeconds: 30 };
+      // Degrade to a process-local limiter when Upstash is temporarily unavailable.
+      // This keeps the app usable while still enforcing a per-instance safety limit.
+      // It is weaker than a distributed limiter across serverless instances; repair
+      // the Upstash credentials to restore global enforcement.
+      console.error("[rate-limit] Shared limiter unavailable; using local fallback", error);
     }
   }
 
-  // In production, never silently downgrade to per-instance counters.
-  // Missing Redis credentials would otherwise allow requests to bypass limits
-  // across serverless instances. Local fallback remains available in development.
-  if (process.env.NODE_ENV === "production") {
-    console.error("[rate-limit] Shared Redis limiter is not configured in production");
-    return { allowed: false, remaining: 0, retryAfterSeconds: 60 };
-  }
-
+  // Local fallback works in every environment, including production. It is
+  // intentionally per-instance, so configure valid Upstash credentials for
+  // consistent limits across all serverless instances.
   const key = scope + ":" + address;
   const now = Date.now();
   const current = localBuckets.get(key);

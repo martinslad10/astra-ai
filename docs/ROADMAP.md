@@ -40,3 +40,20 @@ A successful CI build verifies lint/build only. Before calling a feature product
 - Require user confirmation for consequential external actions.
 - Never run untrusted generated code on the app server.
 - Measure quality with tests rather than making unsupported claims.
+
+
+## Implemented in the research lab
+
+- Coordinator → specialist → independent reviewer workflow.
+- Research, invention, engineering, and business modes.
+- Optional web search and Code Interpreter, with a no-tools fallback.
+- Downloadable Markdown reports and visible workflow status.
+
+## Still required for a reliable advanced workspace
+
+- Automated unit/integration/E2E tests and live smoke tests for every provider integration.
+- A true isolated code workspace with explicit user approval before writing project files or executing generated code.
+- Persistent project workspaces and versioned artifacts.
+- Patent/literature database integrations and source-level citation validation.
+- Shared rate-limit credential repair and production abuse controls.
+- Real-world prototype testing remains a human/lab responsibility.

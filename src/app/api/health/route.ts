@@ -26,6 +26,8 @@ export function GET() {
     notes: [
       "Configuration flags only indicate that environment variables exist; they do not verify provider credentials, permissions, billing, or live requests.",
       "Browser-local memory is available without account sync.",
+      "Research lab uses a coordinator, specialist pass, and independent review; web search and code execution depend on API access.",
+      "When shared Upstash credentials fail, rate limiting falls back to per-instance enforcement and is weaker across serverless instances.",
       "PDFs containing only scanned images require OCR, which is not included.",
     ],
   }, { headers: { "Cache-Control": "no-store" } });

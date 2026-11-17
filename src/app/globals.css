@@ -70,3 +70,17 @@
 
 /* Research lab */
 .marketing-select-grid>button.document-mode{display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-align:left;min-height:110px;padding:15px;border:1px solid #303447;border-radius:12px;background:#11141d;color:#e9eaf2}.marketing-select-grid>button.document-mode strong{font-size:12px}.marketing-select-grid>button.document-mode span{font-size:10px;line-height:1.5;color:#8e96a9}.marketing-select-grid>button.document-mode svg{color:#aaa1ff}.marketing-select-grid>button.document-mode.active{border-color:#8178ce;background:#1a1929;box-shadow:inset 0 0 0 1px #8178ce40}.lab-workflow{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}.lab-workflow span{font-size:10px;color:#b8b4e6;background:#1b1a2b;border:1px solid #34314e;border-radius:20px;padding:6px 9px}.lab-report{padding:18px;color:#c2c7d5;font-size:12px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}.image-result-footer button{display:flex;align-items:center;gap:7px;border:1px solid #37364e;border-radius:7px;background:#191a29;color:#d0ccff;padding:8px 10px;font-size:10px}
+
+
+/* Conversational invention lab and in-chat image generation */
+.chat-generated-image{display:block;width:min(100%,640px);height:auto;margin-top:13px;border:1px solid #34314e;border-radius:12px;background:#10131c}
+.image-mode-active{color:#d6d0ff!important;background:#25213e!important;border-radius:7px;padding:6px 9px!important}
+.lab-session-mode{margin:0 0 15px;padding:12px 14px;border:1px solid #303447;border-radius:10px;background:#11141d;color:#c9cbe0;font-size:11px}
+.lab-session-mode span{color:#81899c}
+.lab-conversation{padding:4px 15px 18px}
+.lab-turn{padding:16px 0;border-bottom:1px solid #252a39}
+.lab-turn:last-child{border-bottom:0}
+.lab-turn>strong{display:block;margin-bottom:10px;font-size:11px;color:#c8c1ff}
+.lab-turn-user>strong{color:#9dd9c9}
+.lab-turn .lab-report{white-space:pre-wrap;overflow-wrap:anywhere;color:#c5cad7;font-size:12px;line-height:1.8;padding:0;background:transparent;border:0}
+.lab-conversation .lab-turn-user .lab-report{color:#aeb6c8}

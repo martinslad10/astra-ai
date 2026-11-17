@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X, FlaskConical } from "lucide-react";
+import { Activity, ArrowUp, BrainCircuit, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X, FlaskConical, Mic, Volume2, Square } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string; image?: string };
 const starters = [
@@ -18,7 +18,9 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [model, setModel] = useState("gpt-4.1-mini");
   const [deepMode, setDeepMode] = useState(false);
-  const [imageMode, setImageMode] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
   const [cloudConversationId, setCloudConversationId] = useState<string | null>(null);
   const [cloudSyncNotice, setCloudSyncNotice] = useState("");
   const [cloudMemoryNotes, setCloudMemoryNotes] = useState<{ title: string; content: string }[]>([]);
@@ -30,6 +32,8 @@ export default function Home() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
   useEffect(() => {
     let active = true;
     async function restoreHistory() {
@@ -95,18 +99,10 @@ export default function Home() {
   async function send(text = draft) {
     const content = text.trim();
     if (!content || busy) return;
-    const next: Message[] = [...messages, { role: "user", content }];
+    const next: Message[] = [...messages, { role: "user", content, ...(pendingImage ? { image: pendingImage } : {}) }];
+    setPendingImage(null);
     setMessages(next); setDraft(""); setError(""); setBusy(true);
     try {
-      if (imageMode) {
-        const imageResponse = await fetch("/api/images", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: content }) });
-        const imageData = await imageResponse.json();
-        if (!imageResponse.ok) throw new Error(imageData.error || "Obrázek se nepodařilo vytvořit.");
-        if (typeof imageData.image !== "string" || !imageData.image.startsWith("data:image/")) throw new Error("Model nevrátil platný obrázek.");
-        setMessages([...next, { role: "assistant", content: "Obrázek vytvořen. Můžeš mi napsat, co na něm chceš změnit.", image: imageData.image }]);
-        setImageMode(false);
-        return;
-      }
       let memory: { title: string; content: string }[] = [];
       try {
         const savedMemory = window.localStorage.getItem("astra-ai-memory-v1");
@@ -128,8 +124,9 @@ export default function Home() {
       const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, memory: combinedMemory, model, depth: deepMode ? "deep" : "standard" }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Požadavek se nezdařil.");
-      const assistantMessage = { role: "assistant" as const, content: data.reply };
+      const assistantMessage = { role: "assistant" as const, content: data.reply, ...(typeof data.image === "string" ? { image: data.image } : {}) };
       setMessages([...next, assistantMessage]);
+      if (voiceMode) void speakText(data.reply);
       const client = getSupabaseBrowserClient();
       if (client) {
         try {
@@ -161,15 +158,68 @@ export default function Home() {
       setError(e instanceof Error ? e.message : "Něco se pokazilo. Zkus to znovu.");
     } finally { setBusy(false); textareaRef.current?.focus(); }
   }
+
+  async function speakText(text: string) {
+    try {
+      const response = await fetch("/api/audio/speech", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.slice(0, 8000) }) });
+      if (!response.ok) { const data = await response.json(); throw new Error(data.error || "Hlas se nepodařilo vytvořit."); }
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.onended = () => URL.revokeObjectURL(audioUrl);
+      await audio.play();
+    } catch (e) { setError(e instanceof Error ? e.message : "Hlasový výstup se nezdařil."); }
+  }
+
+  async function toggleRecording() {
+    if (isRecording) { recorderRef.current?.stop(); return; }
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") throw new Error("Tento prohlížeč nepodporuje hlasový vstup. Zkus aktuální Safari nebo Chrome a povol mikrofon.");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(type => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder.onstop = async () => {
+        setIsRecording(false);
+        stream.getTracks().forEach(track => track.stop());
+        try {
+          const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+          const form = new FormData();
+          form.append("file", blob, blob.type.includes("mp4") ? "voice-message.m4a" : "voice-message.webm");
+          const response = await fetch("/api/audio/transcribe", { method: "POST", body: form });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Hlas se nepodařilo přepsat.");
+          if (typeof data.text === "string" && data.text.trim()) {
+            if (voiceMode) await send(data.text.trim());
+            else setDraft(current => (current.trim() ? current + " " : "") + data.text.trim());
+          }
+        } catch (e) { setError(e instanceof Error ? e.message : "Přepis hlasu se nezdařil."); }
+      };
+      recorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+      setError("");
+    } catch (e) { setError(e instanceof Error ? e.message : "Mikrofon se nepodařilo spustit."); }
+  }
+
   function onSubmit(e: FormEvent) { e.preventDefault(); void send(); }
 
   async function handleFile(file?: File) {
     if (!file) return;
+    if (file.type.startsWith("image/")) {
+      if (file.size > 8 * 1024 * 1024) { setError("Fotografie je příliš velká. Limit je 8 MB."); return; }
+      const reader = new FileReader();
+      reader.onload = () => { if (typeof reader.result === "string") { setPendingImage(reader.result); setError(""); } };
+      reader.onerror = () => setError("Fotografii se nepodařilo načíst.");
+      reader.readAsDataURL(file);
+      return;
+    }
     const name = file.name.toLowerCase();
     const textFile = /\.(txt|md|csv|json|html|xml|log)$/i.test(name);
     const documentFile = /\.(pdf|docx)$/i.test(name);
     if (!textFile && !documentFile) {
-      setError("Podporované formáty jsou TXT, MD, CSV, JSON, HTML, XML, LOG, PDF a DOCX.");
+      setError("Podporované formáty jsou fotografie JPG/PNG/WEBP, TXT, MD, CSV, JSON, HTML, XML, LOG, PDF a DOCX.");
       return;
     }
     if (file.size > (documentFile ? 5 * 1024 * 1024 : 15000)) {
@@ -218,9 +268,9 @@ export default function Home() {
       <header className="topbar"><button className="icon-button menu-button" aria-label="Otevřít menu" onClick={() => setSidebarOpen(true)}><Menu size={20}/></button><div className="breadcrumb"><span>Pracovní prostor</span><span className="crumb-slash">/</span><strong>Chat</strong></div><div className="topbar-right"><span className="model-indicator"><span/> AI model</span><label className="model-select" aria-label="Vybrat AI model"><select value={model} onChange={e => setModel(e.target.value)}><option value="gpt-4.1-mini">Rychlý</option><option value="gpt-4.1">Pokročilý</option><option value="gpt-4o-mini">Úsporný</option></select><ChevronDown size={14}/></label></div></header>
       {cloudSyncNotice && <div className="cloud-sync-notice" role="status">{cloudSyncNotice}</div>}
       <div className={`conversation ${messages.length ? "conversation-active" : ""}`}>
-        {messages.length === 0 ? <div className="welcome"><div className="eyebrow"><WandSparkles size={14}/> VÁŠ NOVÝ PRACOVNÍ PROSTOR</div><h1>Velké nápady začínají<br/><span>jednou otázkou.</span></h1><p className="welcome-subtitle">Přemýšlej, tvoř a stavěj. Jedno místo pro práci s AI — postupně vybavené nástroji, které potřebuješ.</p><div className="starter-grid">{starters.map(({icon:Icon,title,text}) => <button className="starter-card" key={title} onClick={() => void send(text)}><div className="starter-icon"><Icon size={18}/></div><strong>{title}</strong><span>{text}</span><ArrowUp className="starter-arrow" size={15}/></button>)}</div><div className="trust-line"><span><Check size={13}/> Samostatný projekt</span><span><Check size={13}/> Soukromí na prvním místě</span><span><Check size={13}/> Postupně rozšiřitelné</span></div></div> : <div className="message-list">{messages.map((m,i) => <div className={`message ${m.role}`} key={`${i}-${m.role}`}><div className="message-avatar">{m.role === "assistant" ? <Sparkles size={16}/> : "Ty"}</div><div className="message-content"><div className="message-role">{m.role === "assistant" ? "ChatSLADAI" : "Ty"}</div><p>{m.content}</p>{m.image && <img className="chat-generated-image" src={m.image} alt="Obrázek vytvořený v ChatSLADAI" />}</div></div>)}{busy && <div className="message assistant"><div className="message-avatar"><Sparkles size={16}/></div><div className="message-content"><div className="message-role">ChatSLADAI</div><div className="typing"><span/><span/><span/></div></div></div>}<div ref={bottomRef}/></div>}
+        {messages.length === 0 ? <div className="welcome"><div className="eyebrow"><WandSparkles size={14}/> VÁŠ NOVÝ PRACOVNÍ PROSTOR</div><h1>Velké nápady začínají<br/><span>jednou otázkou.</span></h1><p className="welcome-subtitle">Přemýšlej, tvoř a stavěj. Jedno místo pro práci s AI — postupně vybavené nástroji, které potřebuješ.</p><div className="starter-grid">{starters.map(({icon:Icon,title,text}) => <button className="starter-card" key={title} onClick={() => void send(text)}><div className="starter-icon"><Icon size={18}/></div><strong>{title}</strong><span>{text}</span><ArrowUp className="starter-arrow" size={15}/></button>)}</div><div className="trust-line"><span><Check size={13}/> Samostatný projekt</span><span><Check size={13}/> Soukromí na prvním místě</span><span><Check size={13}/> Postupně rozšiřitelné</span></div></div> : <div className="message-list">{messages.map((m,i) => <div className={`message ${m.role}`} key={`${i}-${m.role}`}><div className="message-avatar">{m.role === "assistant" ? <Sparkles size={16}/> : "Ty"}</div><div className="message-content"><div className="message-role">{m.role === "assistant" ? "ChatSLADAI" : "Ty"}</div><p>{m.content}</p>{m.image && <img className="chat-generated-image" src={m.image} alt={m.role === "user" ? "Fotografie přiložená uživatelem" : "Obrázek vytvořený v ChatSLADAI"} />}{m.role === "assistant" && !m.image && <button type="button" className="speak-message" onClick={() => void speakText(m.content)} aria-label="Přečíst odpověď nahlas"><Volume2 size={15}/> Přečíst nahlas</button>}</div></div>)}{busy && <div className="message assistant"><div className="message-avatar"><Sparkles size={16}/></div><div className="message-content"><div className="message-role">ChatSLADAI</div><div className="typing"><span/><span/><span/></div></div></div>}<div ref={bottomRef}/></div>}
       </div>
-      <div className="composer-area">{error && <div className="error-banner"><span>{error}</span><button aria-label="Zavřít upozornění" onClick={() => setError("")}><X size={15}/></button></div>}<form className="composer" onSubmit={onSubmit}><textarea ref={textareaRef} value={draft} onChange={e => setDraft(e.target.value)} placeholder={imageMode ? "Popiš obrázek, který mám vytvořit…" : "Na co dnes společně přijdeme?"} rows={1} onKeyDown={e => {if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();void send()}}}/><div className="composer-footer"><div className="composer-tools"><button type="button" className={imageMode ? "tool-button image-mode-active" : "tool-button"} aria-pressed={imageMode} onClick={() => setImageMode(value => !value)}><ImageIcon size={16}/><span>{imageMode ? "Režim obrázku zapnutý" : "Vytvořit obrázek"}</span></button><button type="button" className="tool-button" onClick={() => fileInputRef.current?.click()}><Paperclip size={16}/><span>Připojit soubor</span></button><input ref={fileInputRef} className="hidden-file-input" type="file" accept=".txt,.md,.csv,.json,.html,.xml,.log,.pdf,.docx,text/plain,text/markdown,text/csv,application/json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={e => { void handleFile(e.target.files?.[0]); e.currentTarget.value = ""; }} /><label className="composer-note deep-mode-toggle"><input type="checkbox" checked={deepMode} onChange={e => setDeepMode(e.target.checked)} /> Hluboké myšlení <span title="Druhá kontrolní fáze odpovědi; může trvat déle a spotřebovat více API kreditu.">ⓘ</span></label><span className="composer-note">Enter pro odeslání · Shift + Enter pro nový řádek</span></div><button className="send-button" type="submit" disabled={!draft.trim()||busy} aria-label="Odeslat zprávu">{busy ? <span className="send-spinner"/> : <ArrowUp size={18}/>}</button></div></form><p className="disclaimer">ChatSLADAI se vyvíjí. Ověřuj důležité informace a nesdílej tajné údaje.</p></div>
+      <div className="composer-area">{error && <div className="error-banner"><span>{error}</span><button aria-label="Zavřít upozornění" onClick={() => setError("")}><X size={15}/></button></div>}<form className="composer" onSubmit={onSubmit}>{pendingImage && <div className="pending-image"><img src={pendingImage} alt="Připravená fotografie" /><button type="button" onClick={() => setPendingImage(null)} aria-label="Odebrat fotografii"><X size={14}/></button></div>}<textarea ref={textareaRef} value={draft} onChange={e => setDraft(e.target.value)} placeholder="Na co dnes společně přijdeme? (Můžeš také požádat o vytvoření obrázku.)" rows={1} onKeyDown={e => {if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();void send()}}}/><div className="composer-footer"><div className="composer-tools"><button type="button" className="tool-button" onClick={() => imageInputRef.current?.click()}><ImageIcon size={16}/><span>Přidat fotografii</span></button><input ref={imageInputRef} className="hidden-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={e => { void handleFile(e.target.files?.[0]); e.currentTarget.value = ""; }} /><button type="button" className="tool-button" onClick={() => fileInputRef.current?.click()}><Paperclip size={16}/><span>Připojit soubor</span></button><input ref={fileInputRef} className="hidden-file-input" type="file" accept=".txt,.md,.csv,.json,.html,.xml,.log,.pdf,.docx,text/plain,text/markdown,text/csv,application/json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={e => { void handleFile(e.target.files?.[0]); e.currentTarget.value = ""; }} /><label className="composer-note deep-mode-toggle"><input type="checkbox" checked={deepMode} onChange={e => setDeepMode(e.target.checked)} /> Hluboké myšlení <span title="Druhá kontrolní fáze odpovědi; může trvat déle a spotřebovat více API kreditu.">ⓘ</span></label><button type="button" className={voiceMode ? "tool-button voice-active" : "tool-button"} onClick={() => setVoiceMode(v => !v)} aria-pressed={voiceMode}><Volume2 size={15}/><span>Hlasový režim</span></button><button type="button" className={isRecording ? "tool-button voice-recording" : "tool-button"} onClick={() => void toggleRecording()} aria-label={isRecording ? "Zastavit nahrávání" : "Mluvit do chatu"}>{isRecording ? <Square size={15}/> : <Mic size={15}/>}<span>{isRecording ? "Zastavit" : "Mluvit"}</span></button><span className="composer-note">Enter pro odeslání · Shift + Enter pro nový řádek</span></div><button className="send-button" type="submit" disabled={!draft.trim()||busy} aria-label="Odeslat zprávu">{busy ? <span className="send-spinner"/> : <ArrowUp size={18}/>}</button></div></form><p className="disclaimer">ChatSLADAI se vyvíjí. Ověřuj důležité informace a nesdílej tajné údaje.</p></div>
     </section>
   </main>;
 }

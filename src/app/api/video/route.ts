@@ -40,12 +40,12 @@ export async function POST(request: Request) {
     });
     const data = await response.json() as Prediction;
     if (!response.ok) {
-      console.error("Astra AI video provider error:", response.status, data.error);
+      console.error("ChatSLADAI video provider error:", response.status, data.error);
       return NextResponse.json({ error: "Video služba požadavek odmítla. Zkontroluj model, oprávnění a kredit u poskytovatele." }, { status: response.status === 429 ? 429 : 502 });
     }
     return NextResponse.json({ id: data.id, status: data.status, output: data.output ?? null, error: data.error ?? null });
   } catch (error) {
-    console.error("Astra AI video create error:", error);
+    console.error("ChatSLADAI video create error:", error);
     return NextResponse.json({ error: "Video se nepodařilo spustit. Zkontroluj připojení a nastavení poskytovatele." }, { status: 502 });
   }
 }
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
     if (!response.ok) return NextResponse.json({ error: "Stav generování se nepodařilo načíst." }, { status: response.status === 429 ? 429 : 502 });
     return NextResponse.json({ id: data.id, status: data.status, output: data.output ?? null, error: data.error ?? null });
   } catch (error) {
-    console.error("Astra AI video poll error:", error);
+    console.error("ChatSLADAI video poll error:", error);
     return NextResponse.json({ error: "Nepodařilo se načíst stav videa." }, { status: 502 });
   }
 }

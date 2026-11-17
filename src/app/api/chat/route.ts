@@ -143,12 +143,24 @@ export async function POST(request: Request) {
       if (!b64) return NextResponse.json({ error: "Model nevrátil obrazová data." }, { status: 502 });
       return NextResponse.json({ reply: "Obrázek je hotový. Můžeš mi napsat, co na něm chceš upravit nebo vytvořit jinak.", image: `data:image/png;base64,${b64}`, depth: "standard" });
     }
-    const input = {
+    const inputMessages: OpenAI.Responses.ResponseInput = messages.map((m) => {
+      if (m.role === "user" && m.image) {
+        return {
+          role: "user",
+          content: [
+            { type: "input_text", text: m.content },
+            { type: "input_image", image_url: m.image, detail: "auto" },
+          ],
+        };
+      }
+      return { role: m.role, content: m.content };
+    });
+    const input: OpenAI.Responses.ResponseCreateParamsNonStreaming = {
       model: selectedModel,
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
-      input: messages.map((m) => m.role === "user" ? { role: "user" as const, content: m.image ? [{ type: "input_text" as const, text: m.content }, { type: "input_image" as const, image_url: m.image }] : [{ type: "input_text" as const, text: m.content }] } : { role: "assistant" as const, content: [{ type: "input_text" as const, text: m.content }] }),
+      input: inputMessages,
       max_output_tokens: 5000,
-    } as any;
+    };
 
     let response;
     try {
@@ -173,9 +185,9 @@ export async function POST(request: Request) {
           model: selectedModel,
           instructions: SYSTEM_INSTRUCTIONS + "\n\nINTERNAL REVIEW PASS: You are the independent reviewer and synthesizer. Review the draft answer for factual gaps, unsupported claims, logical errors, missed constraints, safety issues, and practical weaknesses. Use the conversation as the source of truth. Correct errors, preserve useful detail, and produce one polished final answer directly to the user. Do not mention internal review or claim additional research/tools were used. If the draft is already sound, improve clarity without inventing changes.",
           input: [
-            ...messages.map((m) => m.role === "user" ? ({ role: "user" as const, content: [{ type: "input_text" as const, text: m.content }] }) : ({ role: "assistant" as const, content: [{ type: "input_text" as const, text: m.content }] })),
-            { role: "assistant" as const, content: [{ type: "input_text" as const, text: "DRAFT ANSWER TO REVIEW:\n" + reply }] },
-            { role: "user" as const, content: "Zkontroluj a vylepši návrh podle instrukcí. Vrať pouze finální odpověď." },
+            ...messages.map((m) => ({ role: m.role, content: m.content })),
+            { role: "assistant", content: "DRAFT ANSWER TO REVIEW:\n" + reply },
+            { role: "user", content: "Zkontroluj a vylepši návrh podle instrukcí. Vrať pouze finální odpověď." },
           ],
           max_output_tokens: 5000,
         });

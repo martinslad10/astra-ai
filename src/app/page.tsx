@@ -121,7 +121,9 @@ export default function Home() {
           return acc;
         }, [] as { title: string; content: string }[])
         .slice(0, 10);
-      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: next, memory: combinedMemory, model, depth: deepMode ? "deep" : "standard" }) });
+      const latestUserImageIndex = next.reduce((index, message, current) => message.role === "user" && message.image ? current : index, -1);
+      const chatMessages = next.map((message, index) => ({ role: message.role, content: message.content, ...(index === latestUserImageIndex && message.image ? { image: message.image } : {}) }));
+      const response = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: chatMessages, memory: combinedMemory, model, depth: deepMode ? "deep" : "standard" }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Požadavek se nezdařil.");
       const assistantMessage = { role: "assistant" as const, content: data.reply, ...(typeof data.image === "string" ? { image: data.image } : {}) };

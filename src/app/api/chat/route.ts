@@ -146,7 +146,7 @@ export async function POST(request: Request) {
     const input = {
       model: selectedModel,
       instructions: memory.length ? SYSTEM_INSTRUCTIONS + "\n\nUser-provided memory notes (use only when relevant):\n" + memory.map(note => "- " + note.title + ": " + note.content).join("\n") : SYSTEM_INSTRUCTIONS,
-      input: messages.map((m) => m.role === "user" ? { role: "user" as const, content: m.image ? [{ type: "input_text" as const, text: m.content }, { type: "input_image" as const, image_url: m.image }] : [{ type: "input_text" as const, text: m.content }] } : { role: "assistant" as const, content: m.content }),
+      input: messages.map((m) => m.role === "user" ? { role: "user" as const, content: m.image ? [{ type: "input_text" as const, text: m.content }, { type: "input_image" as const, image_url: m.image }] : [{ type: "input_text" as const, text: m.content }] } : { role: "assistant" as const, content: [{ type: "input_text" as const, text: m.content }] }),
       max_output_tokens: 5000,
     } as const;
 
@@ -173,8 +173,8 @@ export async function POST(request: Request) {
           model: selectedModel,
           instructions: SYSTEM_INSTRUCTIONS + "\n\nINTERNAL REVIEW PASS: You are the independent reviewer and synthesizer. Review the draft answer for factual gaps, unsupported claims, logical errors, missed constraints, safety issues, and practical weaknesses. Use the conversation as the source of truth. Correct errors, preserve useful detail, and produce one polished final answer directly to the user. Do not mention internal review or claim additional research/tools were used. If the draft is already sound, improve clarity without inventing changes.",
           input: [
-            ...messages.map((m) => m.role === "user" ? ({ role: "user" as const, content: [{ type: "input_text" as const, text: m.content }] }) : ({ role: "assistant" as const, content: m.content })),
-            { role: "assistant" as const, content: "DRAFT ANSWER TO REVIEW:\n" + reply },
+            ...messages.map((m) => m.role === "user" ? ({ role: "user" as const, content: [{ type: "input_text" as const, text: m.content }] }) : ({ role: "assistant" as const, content: [{ type: "input_text" as const, text: m.content }] })),
+            { role: "assistant" as const, content: [{ type: "input_text" as const, text: "DRAFT ANSWER TO REVIEW:\n" + reply }] },
             { role: "user" as const, content: "Zkontroluj a vylepši návrh podle instrukcí. Vrať pouze finální odpověď." },
           ],
           max_output_tokens: 5000,

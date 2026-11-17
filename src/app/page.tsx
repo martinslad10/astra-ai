@@ -35,6 +35,8 @@ export default function Home() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const speechAudioRef = useRef<HTMLAudioElement | null>(null);
+  const speechContextRef = useRef<AudioContext | null>(null);
+  const speechSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const speechUrlRef = useRef<string | null>(null);
   const speechRequestRef = useRef(0);
   useEffect(() => {
@@ -166,7 +168,9 @@ export default function Home() {
 
   async function speakText(text: string) {
     const requestId = ++speechRequestRef.current;
-    // Keep only one player alive: repeated taps or voice mode must never overlap.
+    // Stop any previous playback so two voices can never overlap.
+    speechSourceRef.current?.stop();
+    speechSourceRef.current = null;
     if (speechAudioRef.current) {
       speechAudioRef.current.pause();
       speechAudioRef.current.removeAttribute("src");
@@ -177,6 +181,20 @@ export default function Home() {
       URL.revokeObjectURL(speechUrlRef.current);
       speechUrlRef.current = null;
     }
+
+    // On iOS, unlock Web Audio immediately inside the user's tap, before awaiting the API.
+    let audioContext: AudioContext | null = null;
+    try {
+      const AudioContextClass = window.AudioContext;
+      if (AudioContextClass) {
+        audioContext = speechContextRef.current ?? new AudioContextClass();
+        speechContextRef.current = audioContext;
+        if (audioContext.state === "suspended") void audioContext.resume();
+      }
+    } catch {
+      audioContext = null;
+    }
+
     try {
       const response = await fetch("/api/audio/speech", {
         method: "POST",
@@ -189,26 +207,40 @@ export default function Home() {
       }
       const audioBlob = await response.blob();
       if (requestId !== speechRequestRef.current) return;
-      const audioUrl = URL.createObjectURL(audioBlob);
-      speechUrlRef.current = audioUrl;
-      const audio = new Audio();
-      audio.preload = "auto";
-      audio.src = audioUrl;
-      speechAudioRef.current = audio;
-      audio.onended = () => {
-        if (speechAudioRef.current === audio) speechAudioRef.current = null;
-        if (speechUrlRef.current === audioUrl) {
-          URL.revokeObjectURL(audioUrl);
-          speechUrlRef.current = null;
-        }
-      };
-      await audio.play();
+
+      if (audioContext) {
+        if (audioContext.state === "suspended") await audioContext.resume();
+        const decoded = await audioContext.decodeAudioData(await audioBlob.arrayBuffer());
+        if (requestId !== speechRequestRef.current) return;
+        const source = audioContext.createBufferSource();
+        source.buffer = decoded;
+        source.connect(audioContext.destination);
+        speechSourceRef.current = source;
+        source.onended = () => {
+          if (speechSourceRef.current === source) speechSourceRef.current = null;
+        };
+        source.start();
+      } else {
+        // Fallback for browsers without Web Audio support.
+        const audioUrl = URL.createObjectURL(audioBlob);
+        speechUrlRef.current = audioUrl;
+        const audio = new Audio(audioUrl);
+        speechAudioRef.current = audio;
+        audio.onended = () => {
+          if (speechAudioRef.current === audio) speechAudioRef.current = null;
+          if (speechUrlRef.current === audioUrl) {
+            URL.revokeObjectURL(audioUrl);
+            speechUrlRef.current = null;
+          }
+        };
+        await audio.play();
+      }
       setError("");
     } catch (e) {
       if (requestId !== speechRequestRef.current) return;
       const blocked = e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError");
       setError(blocked
-        ? "iPhone nebo Safari zablokoval přehrání zvuku. Klepni znovu na „Přečíst nahlas“ a povol přehrávání zvuku."
+        ? "Safari zablokoval zvuk. Zkus stránku otevřít přímo v Safari a klepnout znovu na „Přečíst nahlas“."
         : e instanceof Error ? e.message : "Hlasový výstup se nezdařil.");
     }
   }

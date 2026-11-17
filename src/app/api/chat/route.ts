@@ -136,7 +136,7 @@ export async function POST(request: Request) {
 
     const client = new OpenAI({ apiKey });
     const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
-    const imageIntent = /\\b(vytvoř|vygeneruj|nakresli|namaluj|udělej|udělej mi|generate|create|draw|paint)\\b.{0,70}\\b(obrázek|fotku|fotografie|ilustraci|grafiku|logo|image|picture|photo|illustration)\\b|\\b(obrázek|fotku|ilustraci|grafiku|logo|image|picture|photo)\\b.{0,50}\\b(vytvoř|vygeneruj|nakresli|udělej|generate|create|draw)\\b/i.test(lastUserMessage?.content || "");
+    const imageIntent = /\b(vytvoř|vygeneruj|nakresli|namaluj|udělej|udělej mi|generate|create|draw|paint)\b.{0,70}\b(obrázek|fotku|fotografie|ilustraci|grafiku|logo|image|picture|photo|illustration)\b|\b(obrázek|fotku|ilustraci|grafiku|logo|image|picture|photo)\b.{0,50}\b(vytvoř|vygeneruj|nakresli|udělej|generate|create|draw)\b/i.test(lastUserMessage?.content || "");
     if (imageIntent && lastUserMessage) {
       const generated = await client.images.generate({ model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-2.5-flare", prompt: lastUserMessage.content.slice(0, 4000), size: "1024x1024" });
       const b64 = generated.data?.[0]?.b64_json;

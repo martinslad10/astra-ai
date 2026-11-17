@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     const output = response.output_text?.trim();
     if (!output) return NextResponse.json({ error: "AI nevrátila obsah dokumentu." }, { status: 502 });
     const doc = new Document({
-      creator: "MARTIVEXA",
+      creator: "ChatSLADAI",
       title,
       description: "Dokument vytvořený nebo upravený pomocí MARTIVEXA",
       sections: [{ properties: {}, children: toParagraphs(output) }],

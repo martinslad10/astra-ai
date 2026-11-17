@@ -14,7 +14,14 @@ const types: Record<string,string> = { agency:"Digitální agentura", digital_pr
 export default function BusinessPage() {
   const client = getSupabaseBrowserClient();
   const [workspaces,setWorkspaces] = useState<Workspace[]>([]);
-  const [approvals,setApprovals] = useState<Approval[]>([]);\n  const [leads,setLeads] = useState<Lead[]>([]);\n  const [tasks,setTasks] = useState<BusinessTask[]>([]);\n  const [accessToken,setAccessToken] = useState("");\n  const [agentBusy,setAgentBusy] = useState("");\n  const [agentMessage,setAgentMessage] = useState("");\n  const [region,setRegion] = useState("Česká republika");\n  const [deliveryGoal,setDeliveryGoal] = useState("");
+  const [approvals,setApprovals] = useState<Approval[]>([]);
+  const [leads,setLeads] = useState<Lead[]>([]);
+  const [tasks,setTasks] = useState<BusinessTask[]>([]);
+  const [accessToken,setAccessToken] = useState("");
+  const [agentBusy,setAgentBusy] = useState("");
+  const [agentMessage,setAgentMessage] = useState("");
+  const [region,setRegion] = useState("Česká republika");
+  const [deliveryGoal,setDeliveryGoal] = useState("");
   const [loading,setLoading] = useState(true);
   const [email,setEmail] = useState("");
   const [showForm,setShowForm] = useState(false);

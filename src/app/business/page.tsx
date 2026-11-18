@@ -78,6 +78,20 @@ export default function BusinessPage() {
 
   useEffect(()=>{ const run = async () => { await Promise.resolve(); await load(); }; void run(); },[load]);
 
+  async function addFinanceEntry(e: FormEvent) {
+    e.preventDefault();
+    if (!client || !selectedWorkspace || !financeDescription.trim() || !(Number(financeAmount)>0)) return;
+    const { data: session } = await client.auth.getSession();
+    const userId = session.session?.user.id;
+    if (!userId) { setError("Přihlas se znovu ke svému účtu."); return; }
+    const { error: insertError } = await client.from("business_financial_entries").insert({
+      workspace_id:selectedWorkspace,user_id:userId,entry_type:financeType,category:financeCategory,
+      description:financeDescription.trim(),amount:Number(financeAmount),currency:"CZK",occurred_at:financeDate
+    });
+    if (insertError) setError(insertError.message);
+    else { setFinanceDescription(""); setFinanceAmount(""); setNotice("Finanční položka byla uložena."); await load(); }
+  }
+
   async function createWorkspace(e: FormEvent) {
     e.preventDefault();
     if (!client || !name.trim()) return;

@@ -37,7 +37,7 @@ export async function GET(request: Request) {
         if (trimmed.startsWith("## ")) return new Paragraph({ text: trimmed.slice(3), heading: HeadingLevel.HEADING_2 });
         if (trimmed.startsWith("# ")) return new Paragraph({ text: trimmed.slice(2), heading: HeadingLevel.HEADING_1 });
         if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) return new Paragraph({ text: "• " + trimmed.slice(2) });
-        if (/^\d+\. /.test(trimmed)) return new Paragraph({ text: trimmed.replace(/^\d+\. /, ""), numbering: { reference: "business-numbering", level: 0 } });
+        if (/^\d+\. /.test(trimmed)) return new Paragraph({ text: trimmed });
         return new Paragraph({ children: [new TextRun(trimmed)] });
       }),
     ];

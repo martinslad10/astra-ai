@@ -42,7 +42,7 @@ export async function GET(request: Request) {
       }),
     ];
     const document = new Document({
-      numbering: { config: [{ reference: "business-numbering", levels: [{ level: 0, format: "decimal", text: "%1.", alignment: "start", style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] }] },
+      
       sections: [{ properties: {}, children }],
     });
     const buffer = await Packer.toBuffer(document);

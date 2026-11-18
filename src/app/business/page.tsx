@@ -136,6 +136,30 @@ export default function BusinessPage() {
     } finally { setAgentBusy(""); }
   }
 
+  async function exportArtifact(artifact:Artifact) {
+    if (!accessToken) { setError("Přihlas se znovu ke svému účtu."); return; }
+    try {
+      const response = await fetch("/api/business/export?artifactId="+encodeURIComponent(artifact.id), {
+        headers: { Authorization: "Bearer "+accessToken }
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(()=>({}));
+        throw new Error(result.error || "Dokument se nepodařilo stáhnout.");
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = artifact.title.replace(/[^a-zA-Z0-9_-]+/g,"-").slice(0,80)+".docx";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Export se nepodařil.");
+    }
+  }
+
   async function updateLeadStatus(lead:Lead,status:string) {
     if (!client) return;
     const { data: session } = await client.auth.getSession();
@@ -183,7 +207,7 @@ export default function BusinessPage() {
       <div className="business-form"><label>Podnik<select value={selectedWorkspace} onChange={e=>setSelectedWorkspace(e.target.value)}>{workspaces.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></label><label>Typ výstupu<select value={artifactType} onChange={e=>setArtifactType(e.target.value)}><option value="website_copy">Texty a struktura webu</option><option value="marketing_campaign">Marketingová kampaň</option><option value="sales_proposal">Obchodní nabídka</option><option value="business_plan">Podnikatelský plán</option><option value="analysis">Analýza trhu a konkurence</option><option value="document">Dokument</option><option value="other">Jiný výstup</option></select></label><label>Co má AI skutečně vytvořit?<textarea value={deliveryGoal} onChange={e=>setDeliveryGoal(e.target.value)} placeholder="Např. kompletní strukturu a texty webu včetně SEO a kontaktních výzev."/></label><div className="business-form-footer"><span>AI vytvoří pracovní materiál a uloží jej jako koncept. Bez tvého pokynu nic nezveřejní.</span><button type="button" disabled={!selectedWorkspace||!!agentBusy||!deliveryGoal.trim()} onClick={()=>void runAgent("create_deliverable",selectedWorkspace,undefined,{artifactType})}>{agentBusy.startsWith("create_deliverable")?"Vytvářím…":"Vytvořit výstup"}</button></div></div>
       {tasks.length===0 ? <div className="business-empty compact"><strong>Žádné pracovní úkoly.</strong><span>Zadej výše zakázku a nech AI připravit plán realizace.</span></div> : <div className="business-approval-list">{tasks.map(task=><div className="business-approval" key={task.id}><div><strong>{task.title}</strong><small>{task.category} · {task.priority} · {task.status}</small><small>{task.description}</small></div><div><select aria-label={"Stav úkolu "+task.title} value={task.status} disabled={!!agentBusy} onChange={e=>void updateTask(task,e.target.value)}><option value="todo">K vyřízení</option><option value="in_progress">Rozpracováno</option><option value="blocked">Blokováno</option><option value="done">Hotovo</option></select></div></div>)}</div>}
       <div className="business-section-title"><div><h2>Vytvořené výstupy</h2><p>Webové texty, kampaně, nabídky, analýzy a dokumenty uložené jako koncepty.</p></div><span>{artifacts.length} výstupů</span></div>
-      {artifacts.length===0 ? <div className="business-empty compact"><strong>Zatím žádné vytvořené výstupy.</strong><span>Vytvoř výše první pracovní materiál.</span></div> : <div className="business-artifacts">{artifacts.map(a=><details className="business-artifact" key={a.id}><summary><strong>{a.title}</strong><span>{a.artifact_type} · {a.status} · {new Date(a.created_at).toLocaleDateString("cs-CZ")}</span></summary><pre>{a.content}</pre><button type="button" onClick={()=>void navigator.clipboard.writeText(a.content)}>Zkopírovat obsah</button></details>)}</div>}
+      {artifacts.length===0 ? <div className="business-empty compact"><strong>Zatím žádné vytvořené výstupy.</strong><span>Vytvoř výše první pracovní materiál.</span></div> : <div className="business-artifacts">{artifacts.map(a=><details className="business-artifact" key={a.id}><summary><strong>{a.title}</strong><span>{a.artifact_type} · {a.status} · {new Date(a.created_at).toLocaleDateString("cs-CZ")}</span></summary><pre>{a.content}</pre><button type="button" onClick={()=>void navigator.clipboard.writeText(a.content)}>Zkopírovat obsah</button><button type="button" onClick={()=>void exportArtifact(a)}>Stáhnout DOCX</button></details>)}</div>}
       <div className="business-section-title"><div><h2>Finance podniku</h2><p>Evidence příjmů a výdajů, cash flow a kontrola limitu. Částky zadáváš ručně.</p></div><span>{selectedFinance.length} položek</span></div>
       <form className="business-form" onSubmit={addFinanceEntry}>
         <label>Podnik<select value={selectedWorkspace} onChange={e=>setSelectedWorkspace(e.target.value)}>{workspaces.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></label>

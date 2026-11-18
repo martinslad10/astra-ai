@@ -5,7 +5,7 @@ import { rateLimit } from "../../../../lib/rate-limit";
 
 export const runtime = "nodejs";
 
-type Action = "research_leads" | "delivery_plan" | "draft_outreach";
+type Action = "research_leads" | "delivery_plan" | "draft_outreach" | "create_deliverable" | "update_task";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const input = body as Record<string, unknown>;
     const action = input.action as Action;
     const workspaceId = typeof input.workspaceId === "string" ? input.workspaceId : "";
-    if (!workspaceId || !["research_leads", "delivery_plan", "draft_outreach"].includes(action)) {
+    if (!workspaceId || !["research_leads", "delivery_plan", "draft_outreach", "create_deliverable", "update_task"].includes(action)) {
       return NextResponse.json({ error: "Chybí platná akce nebo podnik." }, { status: 400 });
     }
 
@@ -120,6 +120,48 @@ Neuváděj e-mail ani jméno člověka, pokud nejsou výslovně a jednoznačně 
         saved++;
       }
       return NextResponse.json({ ok: true, action, summary: String(parsed.summary || "Výzkum dokončen."), found: valid.length, saved, message: valid.length ? "Potenciální klienti byli uloženi do CRM. Žádný nebyl automaticky osloven." : "Nepodařilo se najít dostatečně ověřené výsledky; databáze nebyla doplněna neověřenými kontakty." });
+    }
+
+    if (action === "create_deliverable") {
+      const goal = typeof input.goal === "string" ? input.goal.slice(0, 4000) : "";
+      const artifactType = typeof input.artifactType === "string" && ["analysis","website_copy","marketing_campaign","sales_proposal","business_plan","document","other"].includes(input.artifactType) ? input.artifactType : "document";
+      if (!goal.trim()) return NextResponse.json({ error: "Popiš, jaký výstup má AI připravit." }, { status: 400 });
+      const labels: Record<string,string> = { analysis:"Analýza",website_copy:"Texty a struktura webu",marketing_campaign:"Marketingová kampaň",sales_proposal:"Obchodní nabídka",business_plan:"Podnikatelský plán",document:"Dokument",other:"Jiný výstup" };
+      const response = await openai.responses.create({
+        model,
+        instructions: "Jsi seniorní specialista digitální agentury ChatSLADAI. Vytvoř kompletní použitelný pracovní výstup v češtině, nikoli pouze plán. Nevymýšlej fakta, reference, ceny, výsledky ani právní či finanční jistoty. Chybějící údaje jasně označ jako předpoklady nebo místa k doplnění. Vrať přehledný obsah v Markdownu. Neodesílej, nepublikuj a netvrď, že jsi výstup nasadil.",
+        input: `Podnik: ${workspace.name}\nTyp: ${workspace.business_type}\nNabídka: ${workspace.description}\nPožadovaný výstup: ${labels[artifactType]}\nZadání: ${goal}\n\nVytvoř kvalitní, praktický a dostatečně podrobný hotový návrh. U webu uveď strukturu stránek, texty sekcí, CTA a SEO metadata; u kampaně publikační texty, varianty, cílovou skupinu a měření; u nabídky rozsah, deliverables, harmonogram a předpoklady; u plánu cíle, strategii, finance jako jasně označené odhady, rizika a kroky. Výstup musí být použitelný k další lidské kontrole.`,
+        max_output_tokens: 5000,
+      });
+      const content = response.output_text?.trim() || "";
+      if (!content) throw new Error("AI nevytvořila požadovaný výstup.");
+      const title = (typeof input.title === "string" && input.title.trim() ? input.title.trim() : labels[artifactType] + ": " + workspace.name).slice(0, 240);
+      const { data: artifact, error: artifactError } = await supabase.from("business_artifacts").insert({
+        workspace_id: workspaceId, user_id: user.id, title, artifact_type: artifactType,
+        content, status: "draft", metadata: { source: "business_agent", model },
+      }).select("id,title,artifact_type,status,created_at").single();
+      if (artifactError) throw artifactError;
+      await supabase.from("business_activity").insert({
+        workspace_id: workspaceId, user_id: user.id, event_type: "artifact_created",
+        summary: "AI vytvořila pracovní výstup: " + title, details: { artifact_id: artifact.id, artifact_type: artifactType },
+      });
+      return NextResponse.json({ ok: true, action, artifact, message: "Pracovní výstup byl vytvořen a uložen jako koncept. Zatím nebyl zveřejněn ani odeslán." });
+    }
+
+    if (action === "update_task") {
+      const taskId = typeof input.taskId === "string" ? input.taskId : "";
+      const status = typeof input.status === "string" ? input.status : "";
+      if (!taskId || !["todo","in_progress","blocked","done"].includes(status)) return NextResponse.json({ error: "Neplatný úkol nebo stav." }, { status: 400 });
+      const { data: task, error: taskError } = await supabase.from("business_tasks").update({ status, updated_at: new Date().toISOString() })
+        .eq("id", taskId).eq("workspace_id", workspaceId).eq("user_id", user.id)
+        .select("id,title,status").maybeSingle();
+      if (taskError) throw taskError;
+      if (!task) return NextResponse.json({ error: "Úkol nebyl nalezen." }, { status: 404 });
+      await supabase.from("business_activity").insert({
+        workspace_id: workspaceId, user_id: user.id, event_type: "task_updated",
+        summary: "Změna stavu úkolu: " + task.title, details: { task_id: task.id, status },
+      });
+      return NextResponse.json({ ok: true, action, task });
     }
 
     if (action === "delivery_plan") {

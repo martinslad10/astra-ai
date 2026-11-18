@@ -10,6 +10,7 @@ type Approval = { id: string; workspace_id: string; title: string; action_type: 
 type Lead = { id: string; workspace_id: string; company_name: string; website: string | null; status: string; notes: string; created_at: string };
 type BusinessTask = { id: string; workspace_id: string; title: string; description: string; category: string; status: string; priority: string };
 type Artifact = { id: string; workspace_id: string; title: string; artifact_type: string; content: string; status: string; created_at: string };
+type FinanceEntry = { id: string; workspace_id: string; entry_type: string; category: string; description: string; amount: number; currency: string; occurred_at: string };
 const types: Record<string,string> = { agency:"Digitální agentura", digital_products:"Digitální produkty", ecommerce:"E-commerce", services:"Služby", other:"Jiný podnik" };
 
 export default function BusinessPage() {
@@ -19,6 +20,12 @@ export default function BusinessPage() {
   const [leads,setLeads] = useState<Lead[]>([]);
   const [tasks,setTasks] = useState<BusinessTask[]>([]);
   const [artifacts,setArtifacts] = useState<Artifact[]>([]);
+  const [finance,setFinance] = useState<FinanceEntry[]>([]);
+  const [financeType,setFinanceType] = useState("income");
+  const [financeDescription,setFinanceDescription] = useState("");
+  const [financeAmount,setFinanceAmount] = useState("");
+  const [financeCategory,setFinanceCategory] = useState("sales");
+  const [financeDate,setFinanceDate] = useState(new Date().toISOString().slice(0,10));
   const [selectedWorkspace,setSelectedWorkspace] = useState("");
   const [artifactType,setArtifactType] = useState("website_copy");
   const [accessToken,setAccessToken] = useState("");
@@ -62,8 +69,10 @@ export default function BusinessPage() {
       if (t.error) setError(t.error.message); else setTasks((t.data ?? []) as BusinessTask[]);
       const { data: a2, error: a2Error } = await client.from("business_artifacts").select("id,workspace_id,title,artifact_type,content,status,created_at").in("workspace_id",ids).order("created_at",{ascending:false}).limit(50);
       if (a2Error) setError(a2Error.message); else setArtifacts((a2 ?? []) as Artifact[]);
+      const { data: fin, error: finError } = await client.from("business_financial_entries").select("id,workspace_id,entry_type,category,description,amount,currency,occurred_at").in("workspace_id",ids).order("occurred_at",{ascending:false}).limit(200);
+      if (finError) setError(finError.message); else setFinance((fin ?? []) as FinanceEntry[]);
       if (!selectedWorkspace || !ids.includes(selectedWorkspace)) setSelectedWorkspace(ids[0]);
-    } else { setLeads([]); setTasks([]); setArtifacts([]); setSelectedWorkspace(""); }
+    } else { setLeads([]); setTasks([]); setArtifacts([]); setFinance([]); setSelectedWorkspace(""); }
     setLoading(false);
   },[client,selectedWorkspace]);
 

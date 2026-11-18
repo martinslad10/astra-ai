@@ -9,6 +9,7 @@ type Workspace = { id: string; name: string; business_type: string; description:
 type Approval = { id: string; workspace_id: string; title: string; action_type: string; risk_level: string; requested_at: string; status: string; payload?: { draft?: string; company_name?: string } };
 type Lead = { id: string; workspace_id: string; company_name: string; website: string | null; status: string; notes: string; created_at: string };
 type BusinessTask = { id: string; workspace_id: string; title: string; description: string; category: string; status: string; priority: string };
+type Artifact = { id: string; workspace_id: string; title: string; artifact_type: string; content: string; status: string; created_at: string };
 const types: Record<string,string> = { agency:"Digitální agentura", digital_products:"Digitální produkty", ecommerce:"E-commerce", services:"Služby", other:"Jiný podnik" };
 
 export default function BusinessPage() {
@@ -17,6 +18,9 @@ export default function BusinessPage() {
   const [approvals,setApprovals] = useState<Approval[]>([]);
   const [leads,setLeads] = useState<Lead[]>([]);
   const [tasks,setTasks] = useState<BusinessTask[]>([]);
+  const [artifacts,setArtifacts] = useState<Artifact[]>([]);
+  const [selectedWorkspace,setSelectedWorkspace] = useState("");
+  const [artifactType,setArtifactType] = useState("website_copy");
   const [accessToken,setAccessToken] = useState("");
   const [agentBusy,setAgentBusy] = useState("");
   const [agentMessage,setAgentMessage] = useState("");
@@ -56,9 +60,12 @@ export default function BusinessPage() {
       ]);
       if (l.error) setError(l.error.message); else setLeads((l.data ?? []) as Lead[]);
       if (t.error) setError(t.error.message); else setTasks((t.data ?? []) as BusinessTask[]);
-    } else { setLeads([]); setTasks([]); }
+      const { data: a2, error: a2Error } = await client.from("business_artifacts").select("id,workspace_id,title,artifact_type,content,status,created_at").in("workspace_id",ids).order("created_at",{ascending:false}).limit(50);
+      if (a2Error) setError(a2Error.message); else setArtifacts((a2 ?? []) as Artifact[]);
+      if (!selectedWorkspace || !ids.includes(selectedWorkspace)) setSelectedWorkspace(ids[0]);
+    } else { setLeads([]); setTasks([]); setArtifacts([]); setSelectedWorkspace(""); }
     setLoading(false);
-  },[client]);
+  },[client,selectedWorkspace]);
 
   useEffect(()=>{ const run = async () => { await Promise.resolve(); await load(); }; void run(); },[load]);
 

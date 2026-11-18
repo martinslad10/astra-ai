@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { Activity, ArrowUp, BrainCircuit, BriefcaseBusiness, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X, FlaskConical, Mic, Volume2, Square } from "lucide-react";
+import { Activity, ArrowUp, BrainCircuit, BriefcaseBusiness, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X, FlaskConical, Mic, Volume2, Square, Link2 } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string; image?: string };
 const starters = [
@@ -436,7 +436,8 @@ export default function Home() {
       <button className="new-chat" onClick={() => {setMessages([]);setCloudConversationId(null);setCloudSyncNotice("");setError("");setSidebarOpen(false);try{window.localStorage.removeItem("astra-ai-chat-v1")}catch{/* Ignore unavailable storage. */}}}><Plus size={17}/> Nová konverzace <span>⌘ K</span></button>
       <div className="side-label">PRACOVNÍ PROSTOR</div>
       <button className="side-link active"><Sparkles size={17}/> Chat <span className="active-dot"/></button>
-      <button className="side-link" onClick={() => { router.push("/account"); }}><UserRound size={17}/> Účet / přihlášení</button>
+      <button className="side-link" onClick={() => { router.push("/account"); setSidebarOpen(false); }}><UserRound size={17}/> Účet / přihlášení</button>
+      <button className="side-link" onClick={() => { router.push("/connections"); setSidebarOpen(false); }}><Link2 size={17}/> Propojené služby</button>
       <button className="side-link" onClick={() => { router.push("/memory"); }}><BrainCircuit size={17}/> Moje paměť</button>
       <button className="side-link" onClick={() => { router.push("/lab"); }}><FlaskConical size={17}/> Výzkumná laboratoř <span className="soon">NOVÉ</span></button>
       <button className="side-link" onClick={() => { router.push("/code"); }}><Code2 size={17}/> Programování</button>

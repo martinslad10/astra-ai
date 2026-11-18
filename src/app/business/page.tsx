@@ -91,24 +91,26 @@ export default function BusinessPage() {
     if(updateError) setError(updateError.message); else await load();
   }
 
-  async function runAgent(action:"research_leads"|"delivery_plan"|"draft_outreach",workspaceId:string,leadId?:string) {
+  async function runAgent(action:"research_leads"|"delivery_plan"|"draft_outreach"|"create_deliverable"|"update_task",workspaceId:string,leadId?:string,extra:Record<string,string>={}) {
     if (!accessToken) { setError("Přihlas se znovu ke svému účtu."); return; }
     setAgentBusy(action+workspaceId+(leadId||"")); setAgentMessage(""); setError("");
     try {
       const response = await fetch("/api/business/agent", {
         method:"POST",
         headers:{"Content-Type":"application/json",Authorization:"Bearer "+accessToken},
-        body:JSON.stringify({action,workspaceId,leadId,region,count:5,goal:deliveryGoal})
+        body:JSON.stringify({action,workspaceId,leadId,region,count:5,goal:deliveryGoal,...extra})
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Akce se nepodařila.");
-      setAgentMessage(result.message || result.summary || (action==="delivery_plan" ? "Vytvořeno úkolů: "+result.created : "Hotovo."));
+      setAgentMessage(result.message || result.summary || (action==="delivery_plan" ? "Vytvořeno úkolů: "+result.created : action==="create_deliverable" ? "Výstup byl vytvořen." : "Hotovo."));
       if (result.draft) setAgentMessage("Návrh uložen ke schválení:\\n\\n"+result.draft);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "AI agent narazil na chybu.");
     } finally { setAgentBusy(""); }
   }
+
+  async function updateTask(task:BusinessTask,status:string) { await runAgent("update_task",task.workspace_id,undefined,{taskId:task.id,status}); }
 
   async function decide(id:string,status:"approved"|"rejected") {
     if(!client) return;
@@ -144,12 +146,15 @@ export default function BusinessPage() {
       </div>
       {leads.length===0 ? <div className="business-empty compact"><strong>Zatím žádní potenciální klienti.</strong><span>U podniku klikni na „Najít klienty“ a AI prohledá veřejné firemní zdroje.</span></div> : <div className="business-approval-list">{leads.map(lead=><article className="business-approval" key={lead.id}><div><strong>{lead.company_name}</strong><small>{lead.website || "Web nebyl ověřen"} · {lead.status}</small><small>{lead.notes}</small></div><div><button disabled={!!agentBusy} onClick={()=>void runAgent("draft_outreach",lead.workspace_id,lead.id)}>{agentBusy.includes(lead.id)?"Připravuji…":"Připravit oslovení"}</button></div></article>)}</div>}
       <div className="business-section-title"><div><h2>Pracovní úkoly</h2><p>AI může připravit konkrétní kroky a kritéria dokončení.</p></div><span>{tasks.filter(t=>t.status!=="done").length} otevřených</span></div>
-      {tasks.length===0 ? <div className="business-empty compact"><strong>Žádné pracovní úkoly.</strong><span>Zadej výše zakázku a nech AI připravit plán realizace.</span></div> : <div className="business-approval-list">{tasks.map(task=><div className="business-approval" key={task.id}><div><strong>{task.title}</strong><small>{task.category} · {task.priority} · {task.status}</small><small>{task.description}</small></div></div>)}</div>}
+      <div className="business-form"><label>Podnik<select value={selectedWorkspace} onChange={e=>setSelectedWorkspace(e.target.value)}>{workspaces.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}</select></label><label>Typ výstupu<select value={artifactType} onChange={e=>setArtifactType(e.target.value)}><option value="website_copy">Texty a struktura webu</option><option value="marketing_campaign">Marketingová kampaň</option><option value="sales_proposal">Obchodní nabídka</option><option value="business_plan">Podnikatelský plán</option><option value="analysis">Analýza trhu a konkurence</option><option value="document">Dokument</option><option value="other">Jiný výstup</option></select></label><label>Co má AI skutečně vytvořit?<textarea value={deliveryGoal} onChange={e=>setDeliveryGoal(e.target.value)} placeholder="Např. kompletní strukturu a texty webu včetně SEO a kontaktních výzev."/></label><div className="business-form-footer"><span>AI vytvoří pracovní materiál a uloží jej jako koncept. Bez tvého pokynu nic nezveřejní.</span><button type="button" disabled={!selectedWorkspace||!!agentBusy||!deliveryGoal.trim()} onClick={()=>void runAgent("create_deliverable",selectedWorkspace,undefined,{artifactType})}>{agentBusy.startsWith("create_deliverable")?"Vytvářím…":"Vytvořit výstup"}</button></div></div>
+      {tasks.length===0 ? <div className="business-empty compact"><strong>Žádné pracovní úkoly.</strong><span>Zadej výše zakázku a nech AI připravit plán realizace.</span></div> : <div className="business-approval-list">{tasks.map(task=><div className="business-approval" key={task.id}><div><strong>{task.title}</strong><small>{task.category} · {task.priority} · {task.status}</small><small>{task.description}</small></div><div><select aria-label={"Stav úkolu "+task.title} value={task.status} disabled={!!agentBusy} onChange={e=>void updateTask(task,e.target.value)}><option value="todo">K vyřízení</option><option value="in_progress">Rozpracováno</option><option value="blocked">Blokováno</option><option value="done">Hotovo</option></select></div></div>)}</div>}
+      <div className="business-section-title"><div><h2>Vytvořené výstupy</h2><p>Webové texty, kampaně, nabídky, analýzy a dokumenty uložené jako koncepty.</p></div><span>{artifacts.length} výstupů</span></div>
+      {artifacts.length===0 ? <div className="business-empty compact"><strong>Zatím žádné vytvořené výstupy.</strong><span>Vytvoř výše první pracovní materiál.</span></div> : <div className="business-artifacts">{artifacts.map(a=><details className="business-artifact" key={a.id}><summary><strong>{a.title}</strong><span>{a.artifact_type} · {a.status} · {new Date(a.created_at).toLocaleDateString("cs-CZ")}</span></summary><pre>{a.content}</pre><button type="button" onClick={()=>void navigator.clipboard.writeText(a.content)}>Zkopírovat obsah</button></details>)}</div>}
       <div className="business-section-title approval-heading"><div><h2>Bezpečnostní schvalování</h2><p>Rizikové kroky musí projít tvým rozhodnutím.</p></div></div>
       {approvals.length===0 ? <div className="business-empty compact"><ShieldCheck size={23}/><strong>Žádné čekající požadavky.</strong><span>Jakmile AI připraví akci vyžadující souhlas, zobrazí se zde.</span></div> : <div className="business-approval-list">{approvals.map(a=><div className="business-approval" key={a.id}><div><span>{a.action_type.replaceAll("_"," ")} · riziko {a.risk_level}</span><strong>{a.title}</strong><small>{new Date(a.requested_at).toLocaleString("cs-CZ")}</small>{a.payload?.draft && <p style={{whiteSpace:"pre-wrap"}}>{a.payload.draft}</p>}</div><div><button onClick={()=>void decide(a.id,"approved")}><Check size={14}/> Schválit</button><button onClick={()=>void decide(a.id,"rejected")}><X size={14}/> Zamítnout</button></div></div>)}</div>}
 
-      <div className="business-roadmap"><h2>Co se bude přidávat dál</h2><div><span>01</span><p><strong>AI průzkum trhu a hledání příležitostí</strong><small>Legální zdroje, vyhodnocení poptávky a konkurence.</small></p><span className="roadmap-state">Další etapa</span></div><div><span>02</span><p><strong>CRM a obchodní pipeline</strong><small>Evidence leadů, kvalifikace, návrhy oslovení a follow-up.</small></p><span className="roadmap-state">Plánováno</span></div><div><span>03</span><p><strong>Výroba a dodání zakázek</strong><small>AI specialisté, kontrola kvality a předání klientovi.</small></p><span className="roadmap-state">Plánováno</span></div><div><span>04</span><p><strong>Finance a automatizace</strong><small>Fakturace, platby, rozpočty a auditní stopa.</small></p><span className="roadmap-state">Plánováno</span></div></div>
-      <p className="business-footnote">AI nyní umí vyhledat veřejně dohledatelné firmy, uložit ověřené kandidáty do CRM, navrhnout obchodní oslovení ke schválení a rozdělit zakázku na úkoly. Zprávy neposílá, smlouvy nepodepisuje, peníze neutratí a digitální zakázky zatím sama nevykonává bez dalšího propojení nástrojů a schvalování.</p>
+      <div className="business-roadmap"><h2>Další rozvoj modulu</h2><div><span>01</span><p><strong>AI průzkum trhu a hledání příležitostí</strong><small>Legální zdroje, vyhodnocení poptávky a konkurence.</small></p><span className="roadmap-state">Další etapa</span></div><div><span>02</span><p><strong>CRM a obchodní pipeline</strong><small>Evidence leadů, kvalifikace, návrhy oslovení a follow-up.</small></p><span className="roadmap-state">Plánováno</span></div><div><span>03</span><p><strong>Výroba a dodání zakázek</strong><small>AI specialisté, kontrola kvality a předání klientovi.</small></p><span className="roadmap-state">Plánováno</span></div><div><span>04</span><p><strong>Finance a automatizace</strong><small>Fakturace, platby, rozpočty a auditní stopa.</small></p><span className="roadmap-state">Plánováno</span></div></div>
+      <p className="business-footnote">AI umí vyhledávat firemní leady, připravovat oslovení, plánovat úkoly a vytvářet konkrétní pracovní výstupy uložené jako koncepty. Publikování, rozesílání, placené kampaně, fakturace a externí smluvní kroky vyžadují navazující integrace a samostatné schválení.</p>
     </section>
   </main>;
 }

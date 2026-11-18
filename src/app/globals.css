@@ -125,3 +125,14 @@
 .business-roadmap{margin-top:36px;padding:19px;border:1px solid var(--line);background:#11141d;border-radius:12px}.business-roadmap h2{margin-bottom:12px}.business-roadmap>div{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #252a39}.business-roadmap>div>span:first-child{font:700 11px Manrope,sans-serif;color:#aaa3ff}.business-roadmap p{display:grid;gap:4px;flex:1;margin:0}.business-roadmap p strong{font-size:11px}.business-roadmap p small{font-size:9px;color:#858da0}.roadmap-state{font-size:9px;color:#858da0}
 .business-footnote{font-size:9px;line-height:1.7;color:#6d7588;margin-top:16px}
 @media(max-width:650px){.business-header{padding:0 13px;gap:10px}.business-brand strong{font-size:10px}.business-brand strong span{display:none}.business-content{width:calc(100% - 28px);margin:32px auto 50px}.business-stats{grid-template-columns:1fr;gap:8px}.business-stats>div{grid-template-columns:25px 1fr}.business-grid{grid-template-columns:1fr}.business-form-grid{grid-template-columns:1fr}.business-form-footer{align-items:flex-start;flex-direction:column}.business-approval{align-items:flex-start;flex-direction:column}.business-approval>div:last-child{width:100%}.business-approval button{flex:1;justify-content:center}.business-roadmap{padding:14px}.roadmap-state{display:none}}
+
+.business-artifacts{display:grid;gap:10px}
+.business-artifact{border:1px solid var(--line);background:#11141d;border-radius:10px;padding:14px}
+.business-artifact summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;list-style:none}
+.business-artifact summary::-webkit-details-marker{display:none}
+.business-artifact summary strong{font-size:12px}
+.business-artifact summary span{font-size:9px;color:#858da0}
+.business-artifact pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:560px;overflow:auto;margin:14px 0;padding:14px;background:#0b0e15;border-radius:8px;color:#cbd1df;font:11px/1.75 ui-monospace,monospace}
+.business-artifact button{border:1px solid #39364f;background:#1b1a29;color:#d0ccff;border-radius:7px;padding:8px 10px;font-size:10px}
+.business-approval select{border:1px solid #39364f;background:#151724;color:#d0ccff;border-radius:7px;padding:7px 9px;font-size:10px}
+@media(max-width:650px){.business-artifact summary{align-items:flex-start;flex-direction:column}}

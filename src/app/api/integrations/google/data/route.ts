@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { getGoogleAccessToken } from "../../../../../../lib/google-integration-server";
+import { getGoogleAccessToken } from "../../../../../lib/google-integration-server";
 
 export const runtime = "nodejs";
 

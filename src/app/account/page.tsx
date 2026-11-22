@@ -36,7 +36,7 @@ export default function AccountPage() {
     if (!email.trim()) return;
     setBusy(true); setError(""); setNotice("");
     try {
-      const redirectTo = new URL("/account", window.location.origin).toString();
+      const redirectTo = "https://chatsladai.vercel.app/account";
       const { error: authError } = await client.auth.signInWithOtp({
         email: email.trim(),
         options: { emailRedirectTo: redirectTo },

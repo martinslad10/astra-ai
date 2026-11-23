@@ -14,7 +14,6 @@ ChatSLADAI is an independent Czech-language AI workspace for reasoning, coding a
 - Text attachments: TXT, MD, CSV, JSON, HTML, XML, LOG (15 kB limit)
 - PDF and DOCX text extraction (5 MB limit); scanned PDFs need OCR, which is not included
 - Server-side image-generation endpoint using the OpenAI Images API
-- Optional video-generation integration via Replicate with status polling; the configured model must accept the submitted input schema
 - Multi-stage research lab with coordinator, specialist execution, optional web search/code interpreter, and independent review (API access and billing dependent)
 - AI marketing drafts: social posts, short-video concepts, a 7-day content plan, and A/B test ideas
 - Server-side environment-variable handling for provider credentials
@@ -27,7 +26,6 @@ ChatSLADAI is an independent Czech-language AI workspace for reasoning, coding a
 - Chat history is stored in the browser and is not synchronized to the cloud.
 - Cloud memory is an opt-in first version, not a robust multi-device conflict-resolution system. It requires a configured Supabase project, migration, auth redirect settings, and production testing.
 - Chat can receive browser-local memory notes and, when configured and signed in, the latest cloud memory notes as optional context.
-- Video generation requires a compatible Replicate model, token, and provider credit.
 - Research lab web search and Code Interpreter availability depends on the OpenAI API account, selected model, permissions, and billing. A successful tool-enabled request does not mean every optional tool was actively used.
 - Marketing outputs are drafts only. ChatSLADAI does not publish to social networks or read campaign analytics.
 - The fallback rate limiter is per serverless instance and is not a substitute for a healthy shared Upstash limiter or edge-level abuse protection.
@@ -39,7 +37,6 @@ ChatSLADAI is an independent Czech-language AI workspace for reasoning, coding a
 - Node.js 20.9+
 - An OpenAI API key with access to the selected model and any desired tools
 - Optional: a Supabase project for account sign-in and cloud memory
-- Optional: a Replicate token and compatible video model
 
 ## Run locally
 
@@ -50,7 +47,7 @@ ChatSLADAI is an independent Czech-language AI workspace for reasoning, coding a
 5. Run `npm run lint` and `npm run build`
 6. Start with `npm run dev` and open http://localhost:3000
 
-Chat web search and Code Interpreter require provider/model/tool access and may incur charges. Image generation uses `gpt-image-1`; access and billing depend on the OpenAI account. Optional video generation requires `REPLICATE_API_TOKEN` and `REPLICATE_VIDEO_MODEL` in `owner/model` format.
+Chat web search and Code Interpreter require provider/model/tool access and may incur charges. Image generation uses `gpt-image-1`; access and billing depend on the OpenAI account. Video generation is intentionally disabled for the initial release and will be added later.
 
 ## Supabase account and cloud memory
 
@@ -58,6 +55,6 @@ Follow [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Do not expose `SUPABASE
 
 ## Deployment and public release
 
-The repository has CI for lint and build, and a Vercel URL has been used during development. A passing build is not proof that production provider credentials, Supabase sign-in, image generation, or video generation work. Before announcing full functionality, run the launch checklist in [docs/LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) and test the live site with the actual configured services.
+The repository has CI for lint and build, and a Vercel URL has been used during development. A passing build is not proof that production provider credentials, Supabase sign-in, image generation work. Before announcing full functionality, run the launch checklist in [docs/LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) and test the live site with the actual configured services.
 
 Never commit `.env.local`, real API keys, user data, or provider secrets.

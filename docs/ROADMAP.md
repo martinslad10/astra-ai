@@ -11,7 +11,7 @@ This checklist describes the codebase, not a guarantee that external providers a
 - [x] PDF/DOCX text extraction (5 MB limit; scanned PDFs need OCR)
 - [x] Server-side image generation endpoint (provider access must be tested)
 - [x] AI marketing drafts (no automatic publishing or analytics integration)
-- [x] Optional Replicate video endpoint and polling UI (model compatibility and provider access must be tested)
+- [ ] Video generation (intentionally postponed until a later release)
 - [x] Supabase browser client and email-link sign-in UI
 - [x] Explicit, opt-in first-version cloud sync for memory notes
 - [x] Environment-based secret handling, request-size guards, baseline security headers

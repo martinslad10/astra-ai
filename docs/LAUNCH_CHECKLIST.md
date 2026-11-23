@@ -10,7 +10,7 @@ Use this before announcing the site publicly. Mark an item complete only after t
 
 ## Live site
 - [ ] Open the production URL in a private browser window and on a mobile viewport.
-- [ ] Visit `/`, `/account`, `/memory`, `/code`, `/marketing`, `/images`, and `/video`.
+- [ ] Visit `/`, `/account`, `/memory`, `/code`, `/marketing`, `/images`.
 - [ ] Confirm `/api/health` reports configuration flags without exposing secrets.
 - [ ] Send a basic chat prompt and confirm a response is returned.
 - [ ] Test web search and Code Interpreter separately if those capabilities are being advertised.
@@ -35,7 +35,7 @@ Use this before announcing the site publicly. Mark an item complete only after t
 - Chat history is browser-local, not cloud-synced.
 - Cloud memory is opt-in and its first version does not provide robust conflict resolution.
 - Marketing generates drafts; it does not publish posts or access campaign analytics.
-- Video and image creation depend on separately configured provider accounts and may incur charges.
+- Image creation depends on separately configured provider access and billing. Video generation is postponed and not offered.
 - Rate limiting is per process and not a complete high-scale abuse-prevention solution.
 
 ## Release decision

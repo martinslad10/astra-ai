@@ -3,14 +3,13 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { Activity, ArrowUp, BrainCircuit, BriefcaseBusiness, Check, ChevronDown, Code2, FileText, Film, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X, FlaskConical, Mic, Volume2, Square, Link2 } from "lucide-react";
+import { Activity, ArrowUp, BrainCircuit, BriefcaseBusiness, Check, ChevronDown, Code2, FileText, Image as ImageIcon, Menu, Megaphone, Paperclip, Plus, Sparkles, WandSparkles, UserRound, X, FlaskConical, Mic, Volume2, Square, Link2 } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string; image?: string };
 const starters = [
   { icon: BrainCircuit, title: "Přemýšlej se mnou", text: "Pomoz mi rozebrat složitý problém krok za krokem." },
   { icon: Code2, title: "Vytvoř aplikaci", text: "Navrhni architekturu aplikace a rozepiš první implementační kroky." },
   { icon: ImageIcon, title: "Vizuální tvorba", text: "Připrav kreativní koncept pro realistický vizuál produktu." },
-  { icon: Film, title: "Video a obsah", text: "Navrhni scénář krátkého videa pro sociální sítě." },
 ];
 
 export default function Home() {
@@ -445,7 +444,6 @@ export default function Home() {
       <button className="side-link" onClick={() => { router.push("/business"); setSidebarOpen(false); }}><BriefcaseBusiness size={17}/> Podnikání</button>
       <button className="side-link" onClick={() => { router.push("/marketing"); }}><Megaphone size={17}/> Marketing</button>
       <button className="side-link" onClick={() => { router.push("/images"); }}><ImageIcon size={17}/> Obrázky</button>
-      <button className="side-link" onClick={() => { router.push("/video"); }}><Film size={17}/> Video</button>
       <div className="sidebar-bottom"><div className="status-card"><span className="status-pulse"/><div><strong>Pracovní verze</strong><small>Vývoj právě začíná</small></div><Activity size={16}/></div><div className="profile-row"><div className="avatar">A</div><div><strong>ChatSLADAI</strong><small>Osobní AI prostor</small></div><ChevronDown size={15}/></div></div>
     </aside>
     <section className="main-panel">

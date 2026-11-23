@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 export function GET() {
   const openAiConfigured = Boolean(process.env.OPENAI_API_KEY);
-  const videoConfigured = Boolean(process.env.REPLICATE_API_TOKEN && process.env.REPLICATE_VIDEO_MODEL);
   const supabaseConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
   return NextResponse.json({
@@ -21,7 +20,6 @@ export function GET() {
       marketingDraftsConfigured: openAiConfigured,
       researchLabConfigured: openAiConfigured,
       sharedRateLimitConfigured: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
-      videoGenerationConfigured: videoConfigured,
     },
     notes: [
       "Configuration flags only indicate that environment variables exist; they do not verify provider credentials, permissions, billing, or live requests.",

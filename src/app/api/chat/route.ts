@@ -136,7 +136,8 @@ export async function POST(request: Request) {
 
     const client = new OpenAI({ apiKey });
     const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
-    const imageIntent = /(?:vytvoř(?:it)?|vytvoření|vygeneruj|generuj|nakresli|namaluj|udělej|generate|create|draw|paint)[\\s\\S]{0,160}(?:obrázk\\w*|fotk\\w*|fotografi\\w*|ilustrac\\w*|grafik\\w*|logo\\w*|image\\w*|picture\\w*|photo\\w*|illustration\\w*)|(?:obrázk\\w*|fotk\\w*|fotografi\\w*|ilustrac\\w*|grafik\\w*|logo\\w*|image\\w*|picture\\w*|photo\\w*|illustration\\w*)[\\s\\S]{0,160}(?:vytvoř(?:it)?|vytvoření|vygeneruj|generuj|nakresli|namaluj|udělej|generate|create|draw|paint)/iu.test(lastUserMessage?.content || "");\n    if (imageIntent && lastUserMessage) {
+    const imageIntent = /(?:vytvoř(?:it)?|vytvoření|vygeneruj|generuj|nakresli|namaluj|udělej|generate|create|draw|paint)[\s\S]{0,160}(?:obrázk\w*|fotk\w*|fotografi\w*|ilustrac\w*|grafik\w*|logo\w*|image\w*|picture\w*|photo\w*|illustration\w*)|(?:obrázk\w*|fotk\w*|fotografi\w*|ilustrac\w*|grafik\w*|logo\w*|image\w*|picture\w*|photo\w*|illustration\w*)[\s\S]{0,160}(?:vytvoř(?:it)?|vytvoření|vygeneruj|generuj|nakresli|namaluj|udělej|generate|create|draw|paint)/iu.test(lastUserMessage?.content || "");
+    if (imageIntent && lastUserMessage) {
       const generated = await client.images.generate({ model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-2.5-flare", prompt: lastUserMessage.content.slice(0, 4000), size: "1024x1024" });
       const b64 = generated.data?.[0]?.b64_json;
       if (!b64) return NextResponse.json({ error: "Model nevrátil obrazová data." }, { status: 502 });

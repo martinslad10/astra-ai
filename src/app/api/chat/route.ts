@@ -182,8 +182,8 @@ export async function POST(request: Request) {
     if (deepMode && reply.trim()) {
       try {
         const review = await client.responses.create({
-          model: selectedModel,
-          instructions: SYSTEM_INSTRUCTIONS + "\n\nINTERNAL REVIEW PASS: You are the independent reviewer and synthesizer. Review the draft answer for factual gaps, unsupported claims, logical errors, missed constraints, safety issues, and practical weaknesses. Use the conversation as the source of truth. Correct errors, preserve useful detail, and produce one polished final answer directly to the user. Do not mention internal review or claim additional research/tools were used. If the draft is already sound, improve clarity without inventing changes.",
+          model: selectedModel === "gpt-4.1-mini" ? "gpt-4.1" : selectedModel,
+          instructions: SYSTEM_INSTRUCTIONS + "\n\nINTERNAL REVIEW PASS: You are the independent reviewer and synthesizer. Review the draft answer for factual gaps, unsupported claims, logical errors, missed constraints, safety issues, and practical weaknesses. Independently recalculate every material numerical result, check units and totals, and distinguish monthly recurring revenue from cumulative cash collected over time. For business plans, challenge pricing, acquisition conversion assumptions, customer ramp, churn, customer acquisition cost, and operating/API costs; label unknown costs as estimates or ranges rather than zero. Use the conversation as the source of truth. Correct errors, preserve useful detail, and produce one polished final answer directly to the user. Do not mention internal review or claim additional research/tools were used. If the draft is already sound, improve clarity without inventing changes.",
           input: [
             ...messages.map((m) => ({ role: m.role, content: m.content })),
             { role: "assistant", content: "DRAFT ANSWER TO REVIEW:\n" + reply },

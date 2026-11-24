@@ -3,7 +3,7 @@ import React from "react";
 type Props = { content: string };
 
 function inline(text: string, key: string): React.ReactNode[] {
-  const pattern = /(\*\*[^*]+\*\*|~~[^~]+~~|`[^`]+`|\*[^*]+\*|\[[^\]]+\]\(https?:\/\/[^)]+\))/g;
+  const pattern = /(\*\*[^*]+\*\*|~~[^~]+~~|`[^`]+`|\*[^*]+\*|\[[^\]]+\]\(https?:\/\/[^)]+\)|https?:\/\/[^\s<]+)/g;
   return text.split(pattern).filter(Boolean).map((part, index) => {
     const id = key + "-" + index;
     if (part.startsWith("**") && part.endsWith("**")) return <strong key={id}>{part.slice(2, -2)}</strong>;
@@ -12,6 +12,7 @@ function inline(text: string, key: string): React.ReactNode[] {
     if (part.startsWith("*") && part.endsWith("*")) return <em key={id}>{part.slice(1, -1)}</em>;
     const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/);
     if (link) return <a key={id} href={link[2]} target="_blank" rel="noopener noreferrer">{link[1]}</a>;
+    if (/^https?:\/\//i.test(part)) { const url = part.replace(/[),.;!?]+$/, ""); const suffix = part.slice(url.length); return <React.Fragment key={id}><a href={url} target="_blank" rel="noopener noreferrer">{url}</a>{suffix}</React.Fragment>; }
     return part;
   });
 }

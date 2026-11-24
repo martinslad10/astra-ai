@@ -167,3 +167,25 @@
 .google-data-list article b{display:block;font-size:11px;color:#e7e9f1}
 .google-data-list article small{display:block;margin-top:4px;font-size:9px;color:#8e96a9}
 .google-data-list article p{font-size:10px;line-height:1.6;color:#aab1c1;margin:7px 0 0}
+
+
+/* Readable Markdown in chat responses */
+.message-content .markdown-message{font-size:13px;line-height:1.8;color:#cbd0dd;overflow-wrap:anywhere}
+.message-content .markdown-message>*:first-child{margin-top:0}
+.message-content .markdown-message>*:last-child{margin-bottom:0}
+.message-content .markdown-message h1,.message-content .markdown-message h2,.message-content .markdown-message h3,.message-content .markdown-message h4{color:#f1f1fa;line-height:1.35;margin:20px 0 9px;font-weight:700}
+.message-content .markdown-message h1{font-size:21px}.message-content .markdown-message h2{font-size:18px}.message-content .markdown-message h3{font-size:15px}.message-content .markdown-message h4{font-size:14px}
+.message-content .markdown-message p{margin:9px 0;white-space:normal}
+.message-content .markdown-message ul,.message-content .markdown-message ol{padding-left:23px;margin:10px 0}
+.message-content .markdown-message li{padding-left:3px;margin:4px 0}
+.message-content .markdown-message blockquote{margin:12px 0;padding:8px 13px;border-left:3px solid #8278d6;background:#171827;color:#aeb5c8}
+.message-content .markdown-message hr{border:0;border-top:1px solid #35394a;margin:18px 0}
+.message-content .markdown-message a{color:#bdb5ff;text-decoration:underline;text-underline-offset:2px}
+.message-content .markdown-message :not(pre)>code{background:#202437;border:1px solid #34394e;border-radius:5px;padding:2px 5px;color:#ddd8ff;font:12px ui-monospace,monospace}
+.message-content .markdown-message pre{overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#0b0e15;border:1px solid #303447;border-radius:9px;padding:13px;margin:12px 0;color:#d6d9e3;font:12px/1.65 ui-monospace,monospace}
+.message-content .markdown-message pre code{font:inherit}
+.message-content .markdown-table-wrap{width:100%;overflow-x:auto;margin:12px 0;border:1px solid #303447;border-radius:8px}
+.message-content .markdown-message table{border-collapse:collapse;width:100%;min-width:420px;font-size:11px;line-height:1.55}
+.message-content .markdown-message th,.message-content .markdown-message td{padding:9px 11px;text-align:left;vertical-align:top;border-bottom:1px solid #303447}
+.message-content .markdown-message th{background:#1b1d2b;color:#eeeaff;font-weight:700}
+.message-content .markdown-message tr:last-child td{border-bottom:0}
